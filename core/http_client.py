@@ -1,9 +1,8 @@
 import requests
-import injector
+import injector as inj
 
 
-class HttpClient:
-
+class DefaultHttpClient:
     def __init__(self):
         self._injectors = []
 
@@ -14,7 +13,7 @@ class HttpClient:
         return 30
 
     def add_injector(self, injector):
-        if injector and isinstance(injector, injector.Injector):
+        if injector and isinstance(injector, inj.Injector):
             self._injectors.append(injector)
         else:
             raise TypeError("injector must be an instance of Injector")
@@ -31,22 +30,23 @@ class HttpClient:
                                 headers=request.headers,
                                 data=request.data,
                                 auth=request.auth,
-                                json=request.json,)
+                                json=request.json, )
 
-        return HttpClient.parse_response(resp)
+        return DefaultHttpClient.parse_response(resp)
 
     @staticmethod
     def parse_response(response):
         status_code = response.status_code
-        data = {
-            "status_code": status_code,
-            "data": response.json(),
-            "headers": response.headers
-        }
+
+        body = str(response.text)
+        try:
+            body = response.json()
+        except ValueError:
+            pass  # body is either empty or isn't a json-formatted string
 
         error_class = None
         if 200 <= status_code <= 299:
-            return HttpResponse(response.status_code, response.headers, response.json())
+            return HttpResponse(response.status_code, response.headers, body)
         elif status_code == 401:
             error_class = "AuthenticationError"
         elif status_code == 403:
@@ -66,26 +66,30 @@ class HttpClient:
         elif status_code == 503:
             error_class = "DownForMaintenanceError"
 
+        data = {
+            "status_code": status_code,
+            "data": body,
+            "headers": response.headers
+        }
         if error_class:
             raise _construct_object(error_class, data, cls=IOError)
         else:
             raise IOError(response.text)
 
 
-class PayPalHttpClient(HttpClient):
-
+class PayPalHttpClient(DefaultHttpClient):
     def __init__(self, environment, auth_injector=None):
-        HttpClient.__init__(self)
+        DefaultHttpClient.__init__(self)
         self.environment = environment
         if auth_injector:
             self.add_injector(auth_injector)
         else:
-            auth_injector = injector.AuthInjector(environment)
+            auth_injector = inj.AuthInjector(environment)
             self.add_injector(auth_injector)
 
         self.add_injector(injector=PayPalHttpClient.PayPalDefaultInjector(environment.base_url))
 
-    class PayPalDefaultInjector(injector.Injector):
+    class PayPalDefaultInjector(inj.Injector):
 
         def __init__(self, base_url):
             self.base_url = base_url
@@ -102,25 +106,30 @@ class PayPalHttpClient(HttpClient):
 
 
 class HttpResponse:
-
     def __init__(self, status_code, headers, data):
         self.status_code = status_code
         self.headers = headers
-        if len(data) > 0:
-            self.result = _construct_object('Result', data)
+        if data and len(data) > 0:
+            if isinstance(data, str):
+                self.result = data
+            elif isinstance(data, dict):
+                self.result = _construct_object('Result', data)  # todo: pass through response type
         else:
             self.result = None
 
 
 def _construct_object(name, data, cls=object):
-    obj = type(str(name), (cls,), data)
+    obj = type(str(name), (cls,), {})
     for k, v in data.iteritems():
+        k = str(k).replace("-", "_").lower()
         if isinstance(v, dict):
-            setattr(obj, str(k), _construct_object(str(k), v))
+            setattr(obj, k, _construct_object(k, v))
         elif isinstance(v, list):
             l = []
             for item in v:
-                l.append(_construct_object(str(k), item))
-            setattr(obj, str(k), l)
+                l.append(_construct_object(k, item))
+            setattr(obj, k, l)
+        else:
+            setattr(obj, k, v)
 
     return obj

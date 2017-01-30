@@ -1,4 +1,3 @@
-
 class Environment:
     SANDBOX = "https://api.sandbox.paypal.com"
     PRODUCTION = "https://api.paypal.com"
