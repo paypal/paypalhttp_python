@@ -88,5 +88,5 @@ ENV/
 # Rope project settings
 .ropeproject
 .pyc
-.idea
-.idea
+.idea/*.xml
+.idea/*.iml
