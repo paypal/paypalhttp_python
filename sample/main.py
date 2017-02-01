@@ -1,4 +1,5 @@
 from core import *
+from sdk import *
 
 env = Environment(client_id="AYSq3RDGsmBLJE-otTkBtM-jBRd1TCQwFf9RGfwddNXWz0uFU9ztymylOhRS",
             client_secret="EGnHDxD_qRPdaLdZz8iCr8N7_MzF-YHPTkjs6NKYQvQSBngp4PTTVWkPZRbL",
@@ -12,7 +13,7 @@ invoice = {
     }
 }
 
-invoice_request = InvoiceRequestBuilder.create(invoice)
+invoice_request = InvoicesRequestBuilder.create(invoice)
 
 try:
     response = client.execute(invoice_request)
