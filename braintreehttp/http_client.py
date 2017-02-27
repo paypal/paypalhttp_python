@@ -1,8 +1,10 @@
 import requests
 import injector as inj
+from http_response import HttpResponse
 
 
-class DefaultHttpClient:
+class DefaultHttpClient(object):
+
     def __init__(self):
         self._injectors = []
 
@@ -72,64 +74,8 @@ class DefaultHttpClient:
             "headers": response.headers
         }
         if error_class:
-            raise _construct_object(error_class, data, cls=IOError)
+            raise HttpResponse.construct_object(error_class, data, cls=IOError)
         else:
             raise IOError(response.text)
 
 
-class PayPalHttpClient(DefaultHttpClient):
-    def __init__(self, environment, auth_injector=None):
-        DefaultHttpClient.__init__(self)
-        self.environment = environment
-        if auth_injector:
-            self.add_injector(auth_injector)
-        else:
-            auth_injector = inj.AuthInjector(environment)
-            self.add_injector(auth_injector)
-
-        self.add_injector(injector=PayPalHttpClient.PayPalDefaultInjector(environment.base_url))
-
-    class PayPalDefaultInjector(inj.Injector):
-
-        def __init__(self, base_url):
-            self.base_url = base_url
-
-        def __call__(self, request):
-            if "http" not in request.url:
-                request.url = self.base_url + request.url
-
-            if request.json:
-                request.headers["Content-Type"] = "application/json"
-
-            if "Accept-Encoding" not in request.headers:
-                request.headers["Accept-Encoding"] = "gzip"
-
-
-class HttpResponse:
-    def __init__(self, status_code, headers, data):
-        self.status_code = status_code
-        self.headers = headers
-        if data and len(data) > 0:
-            if isinstance(data, str):
-                self.result = data
-            elif isinstance(data, dict):
-                self.result = _construct_object('Result', data)  # todo: pass through response type
-        else:
-            self.result = None
-
-
-def _construct_object(name, data, cls=object):
-    obj = type(str(name), (cls,), {})
-    for k, v in data.iteritems():
-        k = str(k).replace("-", "_").lower()
-        if isinstance(v, dict):
-            setattr(obj, k, _construct_object(k, v))
-        elif isinstance(v, list):
-            l = []
-            for item in v:
-                l.append(_construct_object(k, item))
-            setattr(obj, k, l)
-        else:
-            setattr(obj, k, v)
-
-    return obj

@@ -1,5 +1,7 @@
 import unittest
 from unit_test_utils import *
+from braintreehttp import DefaultHttpClient, Injector
+import requests
 
 
 class DefaultHttpClientTest(unittest.TestCase):
