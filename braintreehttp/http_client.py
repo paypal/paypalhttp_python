@@ -3,7 +3,7 @@ import injector as inj
 from http_response import HttpResponse
 
 
-class DefaultHttpClient(object):
+class HttpClient(object):
 
     def __init__(self):
         self._injectors = []
@@ -32,50 +32,32 @@ class DefaultHttpClient(object):
                                 headers=request.headers,
                                 data=request.data,
                                 auth=request.auth,
-                                json=request.json, )
+                                json=request.json,)
 
-        return DefaultHttpClient.parse_response(resp)
+        return self.parse_response(resp)
 
-    @staticmethod
-    def parse_response(response):
+    def parse_response_body(self, response):
+        return response.text
+
+    def parse_response(self, response):
         status_code = response.status_code
 
-        body = str(response.text)
-        try:
-            body = response.json()
-        except ValueError:
-            pass  # body is either empty or isn't a json-formatted string
+        body = None
+        if response.text and len(response.text) > 0:
+            body = self.parse_response_body(response)
 
-        error_class = None
         if 200 <= status_code <= 299:
             return HttpResponse(response.status_code, response.headers, body)
-        elif status_code == 401:
-            error_class = "AuthenticationError"
-        elif status_code == 403:
-            error_class = "AuthorizationError"
-        elif status_code == 400:
-            error_class = "BadRequestError"
-        elif status_code == 404:
-            error_class = "ResourceNotFoundError"
-        elif status_code == 422:
-            error_class = "UnprocessableEntityError"
-        elif status_code == 426:
-            error_class = "UpgradeRequiredError"
-        elif status_code == 429:
-            error_class = "RateLimitError"
-        elif status_code == 500:
-            error_class = "InternalServerError"
-        elif status_code == 503:
-            error_class = "DownForMaintenanceError"
+        else:
+            error_class = "APIException"
 
         data = {
             "status_code": status_code,
             "data": body,
             "headers": response.headers
         }
+
         if error_class:
             raise HttpResponse.construct_object(error_class, data, cls=IOError)
-        else:
-            raise IOError(response.text)
 
 

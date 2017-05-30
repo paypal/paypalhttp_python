@@ -14,7 +14,7 @@ class HttpResponseTest(unittest.TestCase):
         resp = HttpResponse(200, {}, "")
         self.assertIsNone(resp.result)
 
-    def test_HttpResponse_constrctor_withDictData_ResultIsObject(self):
+    def test_HttpResponse_constructor_withDictData_ResultIsObject(self):
         object = {
             "int": 100,
             "str": "value",
