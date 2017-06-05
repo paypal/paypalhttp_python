@@ -1,6 +1,9 @@
 class HttpResponse(object):
 
-    def __init__(self, status_code, headers, data):
+    def __init__(self, data, status_code, headers=None):
+        if headers is None:
+            headers = {}
+
         self.status_code = status_code
         self.headers = headers
         if data and len(data) > 0:

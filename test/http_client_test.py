@@ -1,28 +1,37 @@
 import unittest
-from unit_test_utils import *
-from braintreehttp import HttpClient, Injector
-import requests
+from unit_test_utils import WireMockHarness
+from braintreehttp import HttpClient, Injector, HttpRequest
+import responses
 import json
+
 
 class JsonHttpClient(HttpClient):
 
-    def parse_response_body(self, response):
-        return json.loads(response.text)
+    def serialize_request(self, request):
+        return json.dumps(request.request_body)
+
+    def deserialize_response(self, response_body, headers):
+        if "Content-Type" in headers and headers["Content-Type"] == "application/json":
+            return json.loads(response_body)
+        else:
+            raise IOError("Unsupported Content-Type: " + headers["Content-Type"])
 
 
-class HttpClientTest(unittest.TestCase):
+class HttpClientTest(WireMockHarness):
+
+
     @responses.activate
     def test_HttpClient_execute_addsHeaders(self):
-        client = HttpClient()
-        request = requests.Request("GET", "http://localhost/")
-        stub_request_with_empty_reponse(request)
+        client = JsonHttpClient(self.environment())
+        request = HttpRequest("/", "GET")
+        self.stub_request_with_empty_reponse(request)
 
         client.execute(request)
         self.assertEqual(request.headers["User-Agent"], client.get_user_agent())
 
     @responses.activate
     def test_HttpClient_addInjector_usesInjector(self):
-        client = HttpClient()
+        client = JsonHttpClient(self.environment())
 
         class TestInjector(Injector):
             def __call__(self, request):
@@ -30,79 +39,82 @@ class HttpClientTest(unittest.TestCase):
 
         client.add_injector(TestInjector())
 
-        request = requests.Request("GET", "http://localhost/")
-        stub_request_with_empty_reponse(request)
+        request = HttpRequest("/", "GET")
+        self.stub_request_with_empty_reponse(request)
 
         client.execute(request)
-
         self.assertEqual(request.headers["Foo"], "Bar")
 
     @responses.activate
     def test_HttpClient_execute_usesAllParamsInRequest_plaintextdata(self):
-        client = HttpClient()
-        request = requests.Request("POST", "http://examplehost/", headers={"Test": "Header"}, data="Some data")
-        stub_request_with_empty_reponse(request)
+        client = JsonHttpClient(self.environment())
+        request = HttpRequest("/", "POST", "Some data")
+        request.headers["Test"] = "Header"
+        self.stub_request_with_empty_reponse(request)
 
         client.execute(request)
 
         self.assertEqual(len(responses.calls), 1)
         call = responses.calls[0].request
         self.assertEqual(call.method, "POST")
-        self.assertEqual(call.url, "http://examplehost/")
+        self.assertEqual(call.url, "http://localhost/")
         self.assertEqual(call.headers["Test"], "Header")
         self.assertEqual(call.body, "Some data")
 
     @responses.activate
     def test_HttpClient_execute_usesAllParamsInRequest_json(self):
-        client = HttpClient()
-        request = requests.Request("POST", "http://examplehost/", headers={"Test": "Header"}, json={"some": "data"})
-        stub_request_with_empty_reponse(request)
+        client = JsonHttpClient(self.environment())
+        request = HttpRequest("/", "POST")
+        request.header("Test", "Header")
+        request.request_body = "{\"some\": \"data\"}"
+
+        self.stub_request_with_empty_reponse(request)
 
         client.execute(request)
 
         self.assertEqual(len(responses.calls), 1)
         call = responses.calls[0].request
         self.assertEqual(call.method, "POST")
-        self.assertEqual(call.url, "http://examplehost/")
+        self.assertEqual(call.url, "http://localhost/")
         self.assertEqual(call.headers["Test"], "Header")
         self.assertEqual(call.body, "{\"some\": \"data\"}")
 
     @responses.activate
-    def test_HttpClient_onError_throwsCorrectExceptionForStatusCode(self):
-        client = HttpClient()
+    def test_HttpClient_onError_throwsHttpExceptionForNon200StatusCode(self):
+        client = JsonHttpClient(self.environment())
 
-        request = requests.Request("POST", "http://examplehost/error")
-        stub_request_with_response(request, "", 400)
+        request = HttpRequest("/error", "POST")
+        self.stub_request_with_response(request, status=400)
 
         try:
             client.execute(request)
         except BaseException as e:
-            self.assertEqual("APIException", e.__class__.__name__)
+            self.assertEqual("HttpException", e.__class__.__name__)
 
     @responses.activate
     def test_HttpClient_onSuccess_returnsResponse_with_empty_body(self):
-        client = JsonHttpClient()
+        client = JsonHttpClient(self.environment())
 
-        request = requests.Request("GET", "http://localhost/")
-        stub_request_with_response(request, "", 204)
+        request = HttpRequest("/", "GET")
+        self.stub_request_with_response(request, status=204)
 
-        try:
-            response = client.execute(request)
-            self.assertIsNone(response.result)
-        except BaseException as exception:
-            self.fail(exception.message)
+        response = client.execute(request)
+        self.assertIsNone(response.result)
 
     @responses.activate
-    def test_HttpClient_onSuccess_returnsResponse_with_invalid_json_body(self):
+    def test_HttpClient_onSuccess_callsDeserializeResponse(self):
 
         class DeserializingHttpClient(HttpClient):
-            def parse_response_body(self, response):
+            def deserialize_response(self, response_body, headers):
                 return "Some data"
 
-        client = DeserializingHttpClient()
+            def serialize_request(self, request):
+                return request.request_body
 
-        request = requests.Request("GET", "http://localhost/")
-        stub_request_with_response(request, "not some data", 201)
+        client = DeserializingHttpClient(self.environment())
+
+        request = HttpRequest("/", "GET")
+        self.stub_request_with_response(request, response_body="not some data", status=201)
 
         try:
             response = client.execute(request)
@@ -111,11 +123,32 @@ class HttpClientTest(unittest.TestCase):
             self.fail(exception.message)
 
     @responses.activate
-    def test_HttpClient_onSuccess_escapesDashesWhenUnmarshaling(self):
-        client = JsonHttpClient()
+    def test_HttpClient_whenRequestBodyNotNone_callsSerializeRequest(self):
 
-        request = requests.Request("GET", "http://localhost/")
-        stub_request_with_response(request, "{\"valid-key\": \"valid-data\"}", 201)
+        class SerializingHttpClient(HttpClient):
+            def deserialize_response(self, response_body, headers):
+                return response_body
+
+            def serialize_request(self, request):
+                return "Serialized request"
+
+        client = SerializingHttpClient(self.environment())
+
+        request = HttpRequest("/", "GET", {})
+
+        self.stub_request_with_response(request)
+
+        client.execute(request)
+
+        call = responses.calls[0].request
+        self.assertEqual(call.body, "Serialized request")
+
+    @responses.activate
+    def test_HttpClient_onSuccess_escapesDashesWhenUnmarshaling(self):
+        client = JsonHttpClient(self.environment())
+
+        request = HttpRequest("/", "GET")
+        self.stub_request_with_response(request, "{\"valid-key\": \"valid-data\"}", 201)
 
         try:
             response = client.execute(request)

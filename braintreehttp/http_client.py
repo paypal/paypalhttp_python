@@ -1,12 +1,14 @@
 import requests
 import injector as inj
 from http_response import HttpResponse
+from http_exeption import HttpException
 
 
 class HttpClient(object):
 
-    def __init__(self):
+    def __init__(self, environment):
         self._injectors = []
+        self.environment = environment
 
     def get_user_agent(self):
         return "Python HTTP/1.1"
@@ -27,37 +29,36 @@ class HttpClient(object):
         if "User-Agent" not in request.headers:
             request.headers["User-Agent"] = self.get_user_agent()
 
-        resp = requests.request(method=request.method,
-                                url=request.url,
+        data = None
+        if request.request_body is not None:
+            if isinstance(request.request_body, str):
+                data = request.request_body
+            else:
+                data = self.serialize_request(request)
+
+        resp = requests.request(method=request.verb,
+                                url=self.environment.base_url() + request.path,
                                 headers=request.headers,
-                                data=request.data,
-                                auth=request.auth,
-                                json=request.json,)
+                                data=data)
 
         return self.parse_response(resp)
 
-    def parse_response_body(self, response):
-        return response.text
+    def serialize_request(self, request):
+        raise NotImplementedError
+
+    def deserialize_response(self, response_body, headers):
+        raise NotImplementedError
 
     def parse_response(self, response):
         status_code = response.status_code
 
         body = None
-        if response.text and len(response.text) > 0:
-            body = self.parse_response_body(response)
+        if response.text and (len(response.text) > 0 and response.text != 'None'):
+            body = self.deserialize_response(response.text, response.headers)
 
         if 200 <= status_code <= 299:
-            return HttpResponse(response.status_code, response.headers, body)
+            return HttpResponse(body, response.status_code, response.headers)
         else:
-            error_class = "APIException"
-
-        data = {
-            "status_code": status_code,
-            "data": body,
-            "headers": response.headers
-        }
-
-        if error_class:
-            raise HttpResponse.construct_object(error_class, data, cls=IOError)
+            raise HttpException(body, response.status_code, response.headers)
 
 
