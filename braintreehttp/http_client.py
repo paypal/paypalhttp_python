@@ -52,13 +52,13 @@ class HttpClient(object):
     def parse_response(self, response):
         status_code = response.status_code
 
-        body = None
-        if response.text and (len(response.text) > 0 and response.text != 'None'):
-            body = self.deserialize_response(response.text, response.headers)
-
         if 200 <= status_code <= 299:
+            body = ""
+            if response.text and (len(response.text) > 0 and response.text != 'None'):
+                body = self.deserialize_response(response.text, response.headers)
+
             return HttpResponse(body, response.status_code, response.headers)
         else:
-            raise HttpException(body, response.status_code, response.headers)
+            raise HttpException(response.text, response.status_code, response.headers)
 
 

@@ -10,7 +10,7 @@ class TestEnvironent(Environment):
         return "http://localhost"
 
 
-class WireMockHarness(unittest.TestCase):
+class TestHarness(unittest.TestCase):
 
     def environment(self):
         return TestEnvironent()

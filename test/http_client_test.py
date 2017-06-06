@@ -1,5 +1,5 @@
 import unittest
-from unit_test_utils import WireMockHarness
+from unit_test_utils import TestHarness
 from braintreehttp import HttpClient, Injector, HttpRequest
 import responses
 import json
@@ -17,7 +17,7 @@ class JsonHttpClient(HttpClient):
             raise IOError("Unsupported Content-Type: " + headers["Content-Type"])
 
 
-class HttpClientTest(WireMockHarness):
+class HttpClientTest(TestHarness):
 
 
     @responses.activate
@@ -84,12 +84,13 @@ class HttpClientTest(WireMockHarness):
         client = JsonHttpClient(self.environment())
 
         request = HttpRequest("/error", "POST")
-        self.stub_request_with_response(request, status=400)
+        self.stub_request_with_response(request, status=400, response_body="An error occurred!")
 
         try:
             client.execute(request)
         except BaseException as e:
             self.assertEqual("HttpException", e.__class__.__name__)
+            self.assertEqual("An error occurred!", e.message)
 
     @responses.activate
     def test_HttpClient_onSuccess_returnsResponse_with_empty_body(self):
