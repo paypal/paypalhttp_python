@@ -1,7 +1,6 @@
 import unittest
 from braintreehttp import *
 
-
 class HttpResponseTest(unittest.TestCase):
     def test_HttpResponse_constructor_setsParamsCorrectly(self):
         resp = HttpResponse("data", 200, {"header": "value"})

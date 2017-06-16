@@ -1,4 +1,3 @@
-
 class HttpException(IOError):
 
     def __init__(self, message, status_code, headers):

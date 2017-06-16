@@ -3,7 +3,6 @@ import injector as inj
 from http_response import HttpResponse
 from http_exeption import HttpException
 
-
 class HttpClient(object):
 
     def __init__(self, environment):
@@ -23,6 +22,11 @@ class HttpClient(object):
             raise TypeError("injector must be an instance of Injector")
 
     def execute(self, request):
+        try:
+            getattr(request, 'headers')         
+        except AttributeError:
+            request.headers = {}
+            
         for injector in self._injectors:
             injector(request)
 
@@ -30,11 +34,18 @@ class HttpClient(object):
             request.headers["User-Agent"] = self.get_user_agent()
 
         data = None
-        if request.request_body is not None:
-            if isinstance(request.request_body, str):
-                data = request.request_body
+        try:
+            getattr(request, 'body')         
+        except AttributeError:
+            pass
+        else:
+            if isinstance(request.body, str):
+                data = request.body
             else:
                 data = self.serialize_request(request)
+            print "here"
+            print data
+            
 
         resp = requests.request(method=request.verb,
                                 url=self.environment.base_url() + request.path,
@@ -44,10 +55,10 @@ class HttpClient(object):
         return self.parse_response(resp)
 
     def serialize_request(self, request):
-        raise NotImplementedError
+        return request.body
 
     def deserialize_response(self, response_body, headers):
-        raise NotImplementedError
+        return response_body
 
     def parse_response(self, response):
         status_code = response.status_code

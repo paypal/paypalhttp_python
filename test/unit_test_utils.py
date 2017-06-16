@@ -3,7 +3,6 @@ import unittest
 import json
 from braintreehttp import Environment
 
-
 class TestEnvironent(Environment):
 
     def base_url(self):
