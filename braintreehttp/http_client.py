@@ -43,10 +43,7 @@ class HttpClient(object):
                 data = request.body
             else:
                 data = self.serialize_request(request)
-            print "here"
-            print data
             
-
         resp = requests.request(method=request.verb,
                                 url=self.environment.base_url() + request.path,
                                 headers=request.headers,
