@@ -23,10 +23,10 @@ class HttpClient(object):
 
     def execute(self, request):
         try:
-            getattr(request, 'headers')         
+            getattr(request, 'headers')
         except AttributeError:
             request.headers = {}
-            
+
         for injector in self._injectors:
             injector(request)
 
@@ -35,7 +35,7 @@ class HttpClient(object):
 
         data = None
         try:
-            getattr(request, 'body')         
+            getattr(request, 'body')
         except AttributeError:
             pass
         else:
@@ -43,11 +43,11 @@ class HttpClient(object):
                 data = request.body
             else:
                 data = self.serialize_request(request)
-            
+
         resp = requests.request(method=request.verb,
-                                url=self.environment.base_url() + request.path,
-                                headers=request.headers,
-                                data=data)
+                url=self.environment.base_url() + request.path,
+                headers=request.headers,
+                data=data)
 
         return self.parse_response(resp)
 
