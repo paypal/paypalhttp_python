@@ -12,7 +12,7 @@ setup(
     version=version,
     author="Braintree",
     author_email="support@braintreepayments.com",
-    packages=["braintreehttp"],
+    packages=["braintreehttp", "testutils"],
     install_requires=['requests>=2.0.0', 'six>=1.0.0', 'pyopenssl>=0.15'],
     liscene="MIT",
     classifiers=[

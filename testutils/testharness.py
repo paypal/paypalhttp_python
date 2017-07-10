@@ -1,9 +1,9 @@
 import responses
 import unittest
 import json
-from braintreehttp import Environment
+import braintreehttp
 
-class TestEnvironent(Environment):
+class TestEnvironment(braintreehttp.Environment):
 
     def base_url(self):
         return "http://localhost"
@@ -12,7 +12,7 @@ class TestEnvironent(Environment):
 class TestHarness(unittest.TestCase):
 
     def environment(self):
-        return TestEnvironent()
+        return TestEnvironment()
 
     def stub_request_with_empty_reponse(self, request):
         self.stub_request_with_response(request)

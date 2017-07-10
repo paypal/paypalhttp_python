@@ -1,8 +1,11 @@
-import unittest
-from unit_test_utils import TestHarness
-from braintreehttp import HttpClient, Injector
-import responses
 import json
+import unittest
+
+import responses
+
+from braintreehttp import HttpClient, Injector
+from testutils.testharness import TestHarness
+
 
 class GenericRequest:
     pass
