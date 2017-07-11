@@ -1,3 +1,10 @@
+def setattr_mixed(dest, key, value):
+    if isinstance(dest, list):
+        dest.append(value)
+    else:
+        setattr(dest, key, value)
+
+
 class HttpResponse(object):
 
     def __init__(self, data, status_code, headers=None):
@@ -16,17 +23,28 @@ class HttpResponse(object):
 
     @staticmethod
     def construct_object(name, data, cls=object):
-        obj = type(str(name), (cls,), {})
-        for k, v in data.iteritems():
+        if isinstance(data, dict):
+            iterator = iter(data)
+            dest = type(str(name), (cls,), {})
+        elif isinstance(data, list):
+            iterator = range(len(data))
+            dest = []
+        else:
+            return data
+
+        for k in iterator:
+            v = data[k]
+
             k = str(k).replace("-", "_").lower()
             if isinstance(v, dict):
-                setattr(obj, k, HttpResponse.construct_object(k, v))
+                setattr_mixed(dest, k, HttpResponse.construct_object(k, v))
             elif isinstance(v, list):
                 l = []
-                for item in v:
-                    l.append(HttpResponse.construct_object(k, item))
-                setattr(obj, k, l)
-            else:
-                setattr(obj, k, v)
+                for i in range(len(v)):
+                    setattr_mixed(l, i, HttpResponse.construct_object(k, v[i]))
 
-        return obj
+                setattr_mixed(dest, k, l)
+            else:
+                setattr_mixed(dest, k, v)
+
+        return dest

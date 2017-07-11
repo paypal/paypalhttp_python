@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "1.1.3"
+version = "1.1.4"
 
 long_description = """
 	BraintreeHttp is a generic http client designed to be used with code-generated projects.
