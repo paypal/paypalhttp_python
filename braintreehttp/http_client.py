@@ -1,7 +1,7 @@
 import requests
 import injector as inj
 from http_response import HttpResponse
-from http_exeption import HttpException
+from http_exception import HttpException
 
 class HttpClient(object):
 

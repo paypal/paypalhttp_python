@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "1.1.4"
+version = "1.2.0"
 
 long_description = """
 	BraintreeHttp is a generic http client designed to be used with code-generated projects.
@@ -12,7 +12,7 @@ setup(
     version=version,
     author="Braintree",
     author_email="support@braintreepayments.com",
-    packages=["braintreehttp", "testutils"],
+    packages=["braintreehttp", "braintreehttp/testutils"],
     install_requires=['requests>=2.0.0', 'six>=1.0.0', 'pyopenssl>=0.15'],
     liscene="MIT",
     classifiers=[

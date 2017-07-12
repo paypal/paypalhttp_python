@@ -5,6 +5,34 @@ def setattr_mixed(dest, key, value):
         setattr(dest, key, value)
 
 
+def construct_object(name, data, cls=object):
+    if isinstance(data, dict):
+        iterator = iter(data)
+        dest = type(str(name), (cls,), {})
+    elif isinstance(data, list):
+        iterator = range(len(data))
+        dest = []
+    else:
+        return data
+
+    for k in iterator:
+        v = data[k]
+
+        k = str(k).replace("-", "_").lower()
+        if isinstance(v, dict):
+            setattr_mixed(dest, k, construct_object(k, v))
+        elif isinstance(v, list):
+            l = []
+            for i in range(len(v)):
+                setattr_mixed(l, i, construct_object(k, v[i]))
+
+            setattr_mixed(dest, k, l)
+        else:
+            setattr_mixed(dest, k, v)
+
+    return dest
+
+
 class HttpResponse(object):
 
     def __init__(self, data, status_code, headers=None):
@@ -17,34 +45,7 @@ class HttpResponse(object):
             if isinstance(data, str):
                 self.result = data
             elif isinstance(data, dict):
-                self.result = HttpResponse.construct_object('Result', data)  # todo: pass through response type
+                self.result = construct_object('Result', data)  # todo: pass through response type
         else:
             self.result = None
 
-    @staticmethod
-    def construct_object(name, data, cls=object):
-        if isinstance(data, dict):
-            iterator = iter(data)
-            dest = type(str(name), (cls,), {})
-        elif isinstance(data, list):
-            iterator = range(len(data))
-            dest = []
-        else:
-            return data
-
-        for k in iterator:
-            v = data[k]
-
-            k = str(k).replace("-", "_").lower()
-            if isinstance(v, dict):
-                setattr_mixed(dest, k, HttpResponse.construct_object(k, v))
-            elif isinstance(v, list):
-                l = []
-                for i in range(len(v)):
-                    setattr_mixed(l, i, HttpResponse.construct_object(k, v[i]))
-
-                setattr_mixed(dest, k, l)
-            else:
-                setattr_mixed(dest, k, v)
-
-        return dest

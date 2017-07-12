@@ -4,7 +4,7 @@ import unittest
 import responses
 
 from braintreehttp import HttpClient, Injector
-from testutils import TestHarness
+from braintreehttp.testutils import TestHarness
 
 
 class GenericRequest:
