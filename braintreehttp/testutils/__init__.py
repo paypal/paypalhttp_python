@@ -1,1 +1,1 @@
-from testharness import TestHarness
+from braintreehttp.testutils.testharness import TestHarness

@@ -1,7 +1,8 @@
 import requests
-import injector as inj
-from http_response import HttpResponse
-from http_exception import HttpException
+
+from braintreehttp.injector import Injector
+from braintreehttp.http_response import HttpResponse
+from braintreehttp.http_exception import HttpException
 
 class HttpClient(object):
 
@@ -16,7 +17,7 @@ class HttpClient(object):
         return 30
 
     def add_injector(self, injector):
-        if injector and isinstance(injector, inj.Injector):
+        if injector and isinstance(injector, Injector):
             self._injectors.append(injector)
         else:
             raise TypeError("injector must be an instance of Injector")

@@ -1,5 +1,5 @@
 import unittest
-from braintreehttp import *
+from braintreehttp import HttpResponse
 
 
 class HttpResponseTest(unittest.TestCase):
