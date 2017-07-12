@@ -45,15 +45,12 @@ class HttpClient(object):
             else:
                 data = self.serialize_request(request)
 
-        req = requests.Request(method=request.verb,
+        resp = requests.request(method=request.verb,
                 url=self.environment.base_url() + request.path,
                 headers=request.headers,
                 data=data)
 
-        with requests.Session() as sess:
-            resp = sess.send(req.prepare())
-
-            return self.parse_response(resp)
+        return self.parse_response(resp)
 
     def serialize_request(self, request):
         return request.body
