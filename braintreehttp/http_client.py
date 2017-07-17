@@ -48,8 +48,8 @@ class HttpClient(object):
         except AttributeError:
             pass
         else:
-            if isinstance(request.body, str):
-                data = request.body
+            if files or isinstance(request.body, str):
+                data = request.body # `requests` will multipart/form-data encode all data if a file is present
             else:
                 data = self.serialize_request(request)
 
