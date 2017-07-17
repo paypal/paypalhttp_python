@@ -34,6 +34,14 @@ class HttpClient(object):
         if "User-Agent" not in request.headers:
             request.headers["User-Agent"] = self.get_user_agent()
 
+        files = None
+        try:
+            getattr(request, 'file')
+        except AttributeError:
+            pass
+        else:
+            files = {'file': request.file}
+
         data = None
         try:
             getattr(request, 'body')
@@ -48,7 +56,8 @@ class HttpClient(object):
         resp = requests.request(method=request.verb,
                 url=self.environment.base_url() + request.path,
                 headers=request.headers,
-                data=data)
+                data=data,
+                files=files)
 
         return self.parse_response(resp)
 
