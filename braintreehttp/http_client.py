@@ -34,24 +34,22 @@ class HttpClient(object):
         if "User-Agent" not in request.headers:
             request.headers["User-Agent"] = self.get_user_agent()
 
+        data = None
         files = None
         try:
-            getattr(request, 'file')
-        except AttributeError:
-            pass
-        else:
-            files = {'file': request.file}
+            body = getattr(request, 'body')
 
-        data = None
-        try:
-            getattr(request, 'body')
-        except AttributeError:
-            pass
-        else:
-            if files or isinstance(request.body, str):
-                data = request.body # `requests` will multipart/form-data encode all data if a file is present
+            if 'file' in body:
+                files = {'file': body['file']}
+                del body['file']
+
+            if files or isinstance(body, str):
+                data = body # `requests` will multipart/form-data encode all data if a file is present
             else:
                 data = self.serialize_request(request)
+
+        except AttributeError:
+            pass
 
         resp = requests.request(method=request.verb,
                 url=self.environment.base_url() + request.path,
