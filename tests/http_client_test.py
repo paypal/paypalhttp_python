@@ -189,6 +189,7 @@ class HttpClientTest(TestHarness):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
+        request.headers = {"Content-Type": "multipart/form-data"}
         request.body = {'file': open('./README.md', 'rb')}
 
         self.stub_request_with_response(request)
@@ -205,6 +206,7 @@ class HttpClientTest(TestHarness):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
+        request.headers = {"Content-Type": "multipart/form-data"}
         request.body = {"some_key": "some_value", "some_nested[key]": "some_nested_value", "file": open('README.md', 'rb')}
 
         self.stub_request_with_response(request)

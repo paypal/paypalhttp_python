@@ -35,16 +35,23 @@ class HttpClient(object):
             request.headers["User-Agent"] = self.get_user_agent()
 
         data = None
-        files = None
+        files = {}
         try:
             body = getattr(request, 'body')
 
-            if 'file' in body:
-                files = {'file': body['file']}
-                del body['file']
+            if "Content-Type" in request.headers and "multipart/" in request.headers["Content-Type"]:
+                filtered_body = {}
+                for k, v in body.iteritems():
+                    if isinstance(v, file):
+                        files[k] = v
+                    else:
+                        filtered_body[k] = v
 
-            if files or isinstance(body, str):
-                data = body # `requests` will multipart/form-data encode all data if a file is present
+                body = filtered_body
+
+            # `requests` will multipart/form-data encode all data if a file is present
+            if len(files) > 0 or isinstance(body, str):
+                data = body
             else:
                 data = self.serialize_request(request)
 
