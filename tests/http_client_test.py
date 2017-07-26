@@ -1,6 +1,6 @@
 import json
 import unittest
-
+import os
 import responses
 
 from braintreehttp import HttpClient, Injector
@@ -190,7 +190,7 @@ class HttpClientTest(TestHarness):
         request.path = "/"
         request.verb = "POST"
         request.headers = {"Content-Type": "multipart/form-data"}
-        request.body = {'file': open('./README.md', 'rb')}
+        request.body = {'file': open(abspath('./README.md'), 'rb')}
 
         self.stub_request_with_response(request)
         client.execute(request)
@@ -207,7 +207,7 @@ class HttpClientTest(TestHarness):
         request.path = "/"
         request.verb = "POST"
         request.headers = {"Content-Type": "multipart/form-data"}
-        request.body = {"some_key": "some_value", "some_nested[key]": "some_nested_value", "file": open('README.md', 'rb')}
+        request.body = {"some_key": "some_value", "some_nested[key]": "some_nested_value", "file": open(abspath('README.md'), 'rb')}
 
         self.stub_request_with_response(request)
         client.execute(request)
@@ -219,6 +219,9 @@ class HttpClientTest(TestHarness):
         self.assertTrue(b"Content-Disposition: form-data; name=\"some_nested[key]\"" in call.body)
         self.assertTrue(b"some_nested_value" in call.body)
         self.assertTrue(b"Content-Disposition: form-data; name=\"file\"; filename=\"README.md\"" in call.body)
+
+def abspath(path):
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), path)
 
 if __name__ == '__main__':
     unittest.main()

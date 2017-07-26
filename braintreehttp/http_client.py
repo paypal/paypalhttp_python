@@ -42,8 +42,9 @@ class HttpClient(object):
             if "Content-Type" in request.headers and "multipart/" in request.headers["Content-Type"]:
                 files = {}
                 filtered_body = {}
-                for k, v in body.iteritems():
-                    if isinstance(v, file):
+                for k in body:
+                    v = body[k]
+                    if hasattr(v, 'read'):
                         files[k] = v
                     else:
                         filtered_body[k] = v
