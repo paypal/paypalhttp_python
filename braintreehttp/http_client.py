@@ -1,6 +1,7 @@
 import requests
 
 from braintreehttp.injector import Injector
+from braintreehttp.encoder import Encoder
 from braintreehttp.http_response import HttpResponse
 from braintreehttp.http_exception import HttpException
 
@@ -9,6 +10,7 @@ class HttpClient(object):
     def __init__(self, environment):
         self._injectors = []
         self.environment = environment
+        self.encoder = Encoder()
 
     def get_user_agent(self):
         return "Python HTTP/1.1"
@@ -69,10 +71,10 @@ class HttpClient(object):
         return self.parse_response(resp)
 
     def serialize_request(self, request):
-        return request.body
+        return self.encoder.serialize_request(request)
 
     def deserialize_response(self, response_body, headers):
-        return response_body
+        return self.encoder.deserialize_response(response_body, headers)
 
     def parse_response(self, response):
         status_code = response.status_code

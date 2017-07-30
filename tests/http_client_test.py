@@ -1,4 +1,3 @@
-import json
 import unittest
 import os
 import responses
@@ -11,23 +10,11 @@ class GenericRequest:
     pass
 
 
-class JsonHttpClient(HttpClient):
-
-    def serialize_request(self, request):
-        return json.dumps(request.body)
-
-    def deserialize_response(self, response_body, headers):
-        if "Content-Type" in headers and headers["Content-Type"] == "application/json":
-            return json.loads(response_body)
-        else:
-            raise IOError("Unsupported Content-Type: " + headers["Content-Type"])
-
-
 class HttpClientTest(TestHarness):
 
     @responses.activate
     def test_HttpClient_execute_addsHeaders(self):
-        client = JsonHttpClient(self.environment())
+        client = HttpClient(self.environment())
         request = GenericRequest()
         request.path = "/"
         request.verb = "GET"
@@ -38,7 +25,7 @@ class HttpClientTest(TestHarness):
 
     @responses.activate
     def test_HttpClient_addInjector_usesInjector(self):
-        client = JsonHttpClient(self.environment())
+        client = HttpClient(self.environment())
 
         class TestInjector(Injector):
             def __call__(self, request):
@@ -57,7 +44,7 @@ class HttpClientTest(TestHarness):
 
     @responses.activate
     def test_HttpClient_execute_usesAllParamsInRequest_plaintextdata(self):
-        client = JsonHttpClient(self.environment())
+        client = HttpClient(self.environment())
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
@@ -76,7 +63,7 @@ class HttpClientTest(TestHarness):
 
     @responses.activate
     def test_HttpClient_execute_usesAllParamsInRequest_json(self):
-        client = JsonHttpClient(self.environment())
+        client = HttpClient(self.environment())
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
@@ -96,7 +83,7 @@ class HttpClientTest(TestHarness):
 
     @responses.activate
     def test_HttpClient_onError_throwsHttpExceptionForNon200StatusCode(self):
-        client = JsonHttpClient(self.environment())
+        client = HttpClient(self.environment())
 
         request = GenericRequest()
         request.path = "/error"
@@ -111,7 +98,7 @@ class HttpClientTest(TestHarness):
 
     @responses.activate
     def test_HttpClient_onSuccess_returnsResponse_with_empty_body(self):
-        client = JsonHttpClient(self.environment())
+        client = HttpClient(self.environment())
 
         request = GenericRequest()
         request.path = "/"
@@ -169,7 +156,7 @@ class HttpClientTest(TestHarness):
 
     @responses.activate
     def test_HttpClient_onSuccess_escapesDashesWhenUnmarshaling(self):
-        client = JsonHttpClient(self.environment())
+        client = HttpClient(self.environment())
 
         request = GenericRequest()
         request.path = "/"
