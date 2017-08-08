@@ -41,8 +41,8 @@ class HttpClient(object):
             request.headers["User-Agent"] = self.get_user_agent()
 
         data = None
-        try:
-            body = getattr(request, 'body')
+        if hasattr(request, 'body'):
+            body = request.body
             if (isinstance(body, str)):
                 data = body
             elif "Content-Type" in request.headers and "multipart/" in request.headers["Content-Type"]:
@@ -50,7 +50,7 @@ class HttpClient(object):
                 request.headers["Content-Type"] = "multipart/form-data; boundary=" + boundary
 
                 form_params = []
-                for k, v in request.body.iteritems():
+                for k, v in request.body.items():
                     if hasattr(v, "read"):  # It's a file
                         form_params.append(self.add_file_part(k, v))
                     else:                   # It's a regular form param
@@ -58,9 +58,6 @@ class HttpClient(object):
                 data = "--" + boundary + "--" + ("--" + boundary + LINE_FEED).join(form_params) + "--" + boundary + "--"
             else:
                 data = self.serialize_request(request)
-
-        except AttributeError:
-            pass
 
         resp = requests.request(method=request.verb,
                 url=self.environment.base_url() + request.path,
