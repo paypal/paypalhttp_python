@@ -1,9 +1,13 @@
 import requests
+import time
+import os
 
 from braintreehttp.injector import Injector
 from braintreehttp.encoder import Encoder
 from braintreehttp.http_response import HttpResponse
 from braintreehttp.http_exception import HttpException
+
+LINE_FEED = "\r\n"
 
 class HttpClient(object):
 
@@ -37,25 +41,21 @@ class HttpClient(object):
             request.headers["User-Agent"] = self.get_user_agent()
 
         data = None
-        files = None
         try:
             body = getattr(request, 'body')
-
-            if "Content-Type" in request.headers and "multipart/" in request.headers["Content-Type"]:
-                files = {}
-                filtered_body = {}
-                for k in body:
-                    v = body[k]
-                    if hasattr(v, 'read'):
-                        files[k] = v
-                    else:
-                        filtered_body[k] = v
-
-                body = filtered_body
-
-            # `requests` will multipart/form-data encode all data if a file is present
-            if (files and len(files) > 0) or isinstance(body, str):
+            if (isinstance(body, str)):
                 data = body
+            elif "Content-Type" in request.headers and "multipart/" in request.headers["Content-Type"]:
+                boundary = str(time.time()).replace(".", "")
+                request.headers["Content-Type"] = "multipart/form-data; boundary=" + boundary
+
+                form_params = []
+                for k, v in request.body.iteritems():
+                    if hasattr(v, "read"):  # It's a file
+                        form_params.append(self.add_file_part(k, v))
+                    else:                   # It's a regular form param
+                        form_params.append(self.add_form_field(k, v))
+                data = "--" + boundary + "--" + ("--" + boundary + LINE_FEED).join(form_params) + "--" + boundary + "--"
             else:
                 data = self.serialize_request(request)
 
@@ -65,10 +65,28 @@ class HttpClient(object):
         resp = requests.request(method=request.verb,
                 url=self.environment.base_url() + request.path,
                 headers=request.headers,
-                data=data,
-                files=files)
+                data=data)
 
         return self.parse_response(resp)
+
+    def add_form_field(self, key, value):
+        return "Content-Disposition: form-data; name=\"{}\";{}{}{}{}".format(key, LINE_FEED, LINE_FEED, value, LINE_FEED)
+
+    def add_file_part(self, key, f):
+        mime_type = self.mime_type_for_filename(os.path.basename(f.name))
+        s = "Content-Disposition: form-data; name=\"{}\"; filename=\"{}\"{}{}".format(key, os.path.basename(f.name), LINE_FEED, LINE_FEED)
+        return s + "Content-Type: {}{}{}{}{}".format(mime_type, LINE_FEED, LINE_FEED, f.read(), LINE_FEED)
+
+    def mime_type_for_filename(self, filename):
+        _, extension = os.path.splitext(filename)
+        if extension == "jpeg" or extension == "jpg":
+            return "image/jpeg"
+        elif extension == "png":
+            return "image/png"
+        elif extension == "pdf":
+            return "application/pdf"
+        else:
+            return "application/octet-stream"
 
     def serialize_request(self, request):
         return self.encoder.serialize_request(request)

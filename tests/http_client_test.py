@@ -7,7 +7,12 @@ from braintreehttp.testutils import TestHarness
 
 
 class GenericRequest:
-    pass
+    def __str__(self):
+        s = ""
+        for key in dir(self):
+            if not key.startswith("__"):
+                s += "{0}: {1}\n".format(key, getattr(self, key))
+        return s
 
 
 class HttpClientTest(TestHarness):
