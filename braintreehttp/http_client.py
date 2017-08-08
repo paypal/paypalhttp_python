@@ -55,7 +55,7 @@ class HttpClient(object):
                         form_params.append(self.add_file_part(k, v))
                     else:                   # It's a regular form param
                         form_params.append(self.add_form_field(k, v))
-                data = "--" + boundary + "--" + LINE_FEED + ("--" + boundary + LINE_FEED).join(form_params) + LINE_FEED + "--" + boundary + "--"
+                data = "--" + boundary + LINE_FEED + ("--" + boundary + LINE_FEED).join(form_params) + LINE_FEED + "--" + boundary + "--"
             else:
                 data = self.serialize_request(request)
 
