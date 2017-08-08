@@ -55,7 +55,7 @@ class HttpClient(object):
                         form_params.append(self.add_file_part(k, v))
                     else:                   # It's a regular form param
                         form_params.append(self.add_form_field(k, v))
-                data = "--" + boundary + "--" + ("--" + boundary + LINE_FEED).join(form_params) + "--" + boundary + "--"
+                data = "--" + boundary + "--" + LINE_FEED + ("--" + boundary + LINE_FEED).join(form_params) + LINE_FEED + "--" + boundary + "--"
             else:
                 data = self.serialize_request(request)
 
@@ -67,11 +67,11 @@ class HttpClient(object):
         return self.parse_response(resp)
 
     def add_form_field(self, key, value):
-        return "Content-Disposition: form-data; name=\"{}\";{}{}{}{}".format(key, LINE_FEED, LINE_FEED, value, LINE_FEED)
+        return "Content-Disposition: form-data; name=\"{}\"{}{}{}{}".format(key, LINE_FEED, LINE_FEED, value, LINE_FEED)
 
     def add_file_part(self, key, f):
         mime_type = self.mime_type_for_filename(os.path.basename(f.name))
-        s = "Content-Disposition: form-data; name=\"{}\"; filename=\"{}\"{}{}".format(key, os.path.basename(f.name), LINE_FEED, LINE_FEED)
+        s = "Content-Disposition: form-data; name=\"{}\"; filename=\"{}\"{}".format(key, os.path.basename(f.name), LINE_FEED)
         return s + "Content-Type: {}{}{}{}{}".format(mime_type, LINE_FEED, LINE_FEED, f.read(), LINE_FEED)
 
     def mime_type_for_filename(self, filename):
