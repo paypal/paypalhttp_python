@@ -1,4 +1,7 @@
 ##  1.4.1
+* Fix multipart data encoding issue (the sequel)
+
+##  1.4.1
 * Fix multipart data encoding issue
 
 ##  1.4.0
