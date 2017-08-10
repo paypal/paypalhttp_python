@@ -1,3 +1,6 @@
+##  1.4.4
+* Strictly check for None body before serializing
+
 ##  1.4.3
 * Fix multipart data encoding issue (a trilogy)
 
