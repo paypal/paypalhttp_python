@@ -41,7 +41,7 @@ class HttpClient(object):
             request.headers["User-Agent"] = self.get_user_agent()
 
         data = None
-        if hasattr(request, 'body'):
+        if hasattr(request, 'body') and request.body != None:
             body = request.body
             if (isinstance(body, str)):
                 data = body
