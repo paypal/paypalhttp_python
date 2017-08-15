@@ -1,18 +1,8 @@
-##  1.4.4
+##  0.1.0
 * Strictly check for None body before serializing
-
-##  1.4.3
 * Fix multipart data encoding issue (a trilogy)
-
-##  1.4.2
 * Fix multipart data encoding issue (the sequel)
-
-##  1.4.1
 * Fix multipart data encoding issue
-
-##  1.4.0
 * Add support for encoding/decoding json in HttpClient
-
-##  1.3.0
 * Add support for multipart/form-data requests
 
