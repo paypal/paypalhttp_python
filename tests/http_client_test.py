@@ -130,7 +130,7 @@ class HttpClientTest(TestHarness):
         self.assertEqual(call.body, "{\"some\": \"data\"}")
 
     @responses.activate
-    def test_HttpClient_onError_throwsHttpExceptionForNon200StatusCode(self):
+    def test_HttpClient_onError_throwsHttpErrorForNon200StatusCode(self):
         client = HttpClient(self.environment())
 
         request = GenericRequest()
@@ -141,7 +141,7 @@ class HttpClientTest(TestHarness):
         try:
             client.execute(request)
         except BaseException as e:
-            self.assertEqual("HttpException", e.__class__.__name__)
+            self.assertEqual("HttpError", e.__class__.__name__)
             self.assertEqual("An error occurred!", str(e))
 
     @responses.activate

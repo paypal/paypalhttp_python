@@ -3,16 +3,10 @@ import unittest
 import json
 import braintreehttp
 
-class TestEnvironment(braintreehttp.Environment):
-
-    def base_url(self):
-        return "http://localhost"
-
-
 class TestHarness(unittest.TestCase):
 
     def environment(self):
-        return TestEnvironment()
+        return braintreehttp.Environment("http://localhost")
 
     def stub_request_with_empty_reponse(self, request):
         self.stub_request_with_response(request)
@@ -27,6 +21,6 @@ class TestHarness(unittest.TestCase):
                 body = json.dumps(response_body)
 
 
-        responses.add(request.verb, self.environment().base_url() + request.path, body=body, content_type=content_type, status=status)
+        responses.add(request.verb, self.environment().base_url + request.path, body=body, content_type=content_type, status=status)
 
 

@@ -1,4 +1,4 @@
-class HttpException(IOError):
+class HttpError(IOError):
 
     def __init__(self, message, status_code, headers):
         IOError.__init__(self)

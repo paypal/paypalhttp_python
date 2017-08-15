@@ -4,7 +4,7 @@ import os
 
 from braintreehttp.encoder import Encoder
 from braintreehttp.http_response import HttpResponse
-from braintreehttp.http_exception import HttpException
+from braintreehttp.http_error import HttpError
 
 LINE_FEED = "\r\n"
 
@@ -59,7 +59,7 @@ class HttpClient(object):
                 data = self.serialize_request(request)
 
         resp = requests.request(method=request.verb,
-                url=self.environment.base_url() + request.path,
+                url=self.environment.base_url + request.path,
                 headers=request.headers,
                 data=data)
 
@@ -100,6 +100,6 @@ class HttpClient(object):
 
             return HttpResponse(body, response.status_code, response.headers)
         else:
-            raise HttpException(response.text, response.status_code, response.headers)
+            raise HttpError(response.text, response.status_code, response.headers)
 
 
