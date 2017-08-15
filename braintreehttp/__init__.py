@@ -1,5 +1,4 @@
 from braintreehttp.environment import Environment
 from braintreehttp.http_client import HttpClient
 from braintreehttp.http_response import HttpResponse
-from braintreehttp.injector import Injector
 from braintreehttp.http_exception import HttpException

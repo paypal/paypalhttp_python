@@ -2,7 +2,6 @@ import requests
 import time
 import os
 
-from braintreehttp.injector import Injector
 from braintreehttp.encoder import Encoder
 from braintreehttp.http_response import HttpResponse
 from braintreehttp.http_exception import HttpException
@@ -23,10 +22,10 @@ class HttpClient(object):
         return 30
 
     def add_injector(self, injector):
-        if injector and isinstance(injector, Injector):
+        if injector and '__call__' in dir(injector):
             self._injectors.append(injector)
         else:
-            raise TypeError("injector must be an instance of Injector")
+            raise TypeError("injector must be a function or implement the __call__ method")
 
     def execute(self, request):
         try:

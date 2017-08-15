@@ -2,7 +2,7 @@ import unittest
 import os
 import responses
 
-from braintreehttp import HttpClient, Injector
+from braintreehttp import HttpClient
 from braintreehttp.testutils import TestHarness
 
 
@@ -28,11 +28,20 @@ class HttpClientTest(TestHarness):
         client.execute(request)
         self.assertEqual(request.headers["User-Agent"], client.get_user_agent())
 
-    @responses.activate
-    def test_HttpClient_addInjector_usesInjector(self):
+    def testHttpClient_addInjector_throwsWhenArgumentNotFunctional(self):
         client = HttpClient(self.environment())
 
-        class TestInjector(Injector):
+        try:
+            client.add_injector(1)
+            self.fail("client.add_injector did not throw for non-functional argument")
+        except TypeError as e:
+            self.assertEqual(str(e), "injector must be a function or implement the __call__ method")
+
+    @responses.activate
+    def test_HttpClient_addInjector_usesInjectorClass(self):
+        client = HttpClient(self.environment())
+
+        class TestInjector():
             def __call__(self, request):
                 request.headers["Foo"] = "Bar"
 
@@ -46,6 +55,40 @@ class HttpClientTest(TestHarness):
 
         client.execute(request)
         self.assertEqual(request.headers["Foo"], "Bar")
+        
+    @responses.activate
+    def test_HttpClient_addInjector_usesInjectorFunction(self):
+        client = HttpClient(self.environment())
+
+        def inj(request):
+            request.headers["Foo"] = "Bar"
+
+        client.add_injector(inj)
+
+        request = GenericRequest()
+        request.path = "/"
+        request.verb = "GET"
+
+        self.stub_request_with_empty_reponse(request)
+
+        client.execute(request)
+        self.assertEqual(request.headers["Foo"], "Bar")
+        
+    @responses.activate
+    def test_HttpClient_addInjector_usesInjectorLambda(self):
+        client = HttpClient(self.environment())
+
+        client.add_injector(lambda req: req.headers.clear())
+
+        request = GenericRequest()
+        request.path = "/"
+        request.verb = "GET"
+        request.headers = {"Foo": "Bar"}
+
+        self.stub_request_with_empty_reponse(request)
+
+        client.execute(request)
+        self.assertFalse("Foo" in request.headers)
 
     @responses.activate
     def test_HttpClient_execute_usesAllParamsInRequest_plaintextdata(self):
@@ -99,7 +142,7 @@ class HttpClientTest(TestHarness):
             client.execute(request)
         except BaseException as e:
             self.assertEqual("HttpException", e.__class__.__name__)
-            self.assertEqual("An error occurred!", e.message)
+            self.assertEqual("An error occurred!", str(e))
 
     @responses.activate
     def test_HttpClient_onSuccess_returnsResponse_with_empty_body(self):
@@ -134,7 +177,7 @@ class HttpClientTest(TestHarness):
             response = client.execute(request)
             self.assertEqual(response.result, "Some data")
         except BaseException as exception:
-            self.fail(exception.message)
+            self.fail(str(exception))
 
     @responses.activate
     def test_HttpClient_whenRequestBodyNotNone_callsSerializeRequest(self):
