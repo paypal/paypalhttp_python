@@ -14,6 +14,11 @@ class HttpResponseTest(unittest.TestCase):
         resp = HttpResponse("", {})
         self.assertIsNone(resp.result)
 
+    def test_HttpResponse_constructor_withArrayData_ResultIsArray(self):
+        data = ["one", "two"]
+        resp = HttpResponse(data, 200, {"Content-Type": "application/json"})
+        self.assertEqual(resp.result, data)
+
     def test_HttpResponse_constructor_withDictData_ResultIsObject(self):
         object = {
             "int": 100,

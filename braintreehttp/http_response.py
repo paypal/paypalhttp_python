@@ -44,7 +44,7 @@ class HttpResponse(object):
         if data and len(data) > 0:
             if isinstance(data, str):
                 self.result = data
-            elif isinstance(data, dict):
+            elif isinstance(data, dict) or isinstance(data, list):
                 self.result = construct_object('Result', data)  # todo: pass through response type
         else:
             self.result = None

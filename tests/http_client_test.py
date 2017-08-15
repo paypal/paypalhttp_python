@@ -55,7 +55,7 @@ class HttpClientTest(TestHarness):
 
         client.execute(request)
         self.assertEqual(request.headers["Foo"], "Bar")
-        
+
     @responses.activate
     def test_HttpClient_addInjector_usesInjectorFunction(self):
         client = HttpClient(self.environment())
@@ -178,6 +178,21 @@ class HttpClientTest(TestHarness):
             self.assertEqual(response.result, "Some data")
         except BaseException as exception:
             self.fail(str(exception))
+
+    @responses.activate
+    def test_HttpClient_parsesJSONArrayResponse(self):
+        client = HttpClient(self.environment())
+
+        request = GenericRequest()
+        request.path = "/"
+        request.verb = "GET"
+
+        response_body = '["one", "two"]'
+        self.stub_request_with_response(request, response_body=response_body)
+
+        resp = client.execute(request)
+
+        self.assertEqual(resp.result, ["one", "two"])
 
     @responses.activate
     def test_HttpClient_whenRequestBodyNotNone_callsSerializeRequest(self):
