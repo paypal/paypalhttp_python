@@ -72,6 +72,7 @@ def wait_for_package_manager(version)
       sleep 1
     end
   end
+  "Version #{version} on package manager!"
 end
 
 def version_released?(version)
