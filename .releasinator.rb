@@ -60,7 +60,7 @@ python setup.py sdist bdist_wheel --universal
 end
 
 def publish_to_package_manager(version)
-  CommandProcessor.command("echo 'twine upload dist/*'", live_output=true)
+  CommandProcessor.command("twine upload dist/*", live_output=true)
 end
 
 def wait_for_package_manager(version)
