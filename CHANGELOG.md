@@ -1,3 +1,6 @@
+## 0.2.0
+* Release on PyPi.
+
 ## 0.1.3
 * Bump version for PyPi.
 
