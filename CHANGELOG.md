@@ -1,3 +1,6 @@
+## 0.1.3
+* Bump version for PyPi
+
 ## 0.1.2
 * Add automatic release scripting.
 
