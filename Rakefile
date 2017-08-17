@@ -1,18 +1,8 @@
 require 'rake'
 
-task :default => :test
-
-task :release => [:clean, :test, :release_braintreehttp]
+spec = Gem::Specification.find_by_name 'releasinator'
+load "#{spec.gem_dir}/lib/tasks/releasinator.rake"
 
 task :test do
-  sh "nosetests"
-end
-
-task :clean do
-  sh "rm -rf dist"
-end
-
-task :release_braintreehttp do
-  sh "python setup.py sdist bdist_wheel --universal"
-  sh "twine upload dist/*"
+  sh "python -m unittest tests"
 end

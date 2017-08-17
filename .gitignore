@@ -89,3 +89,4 @@ ENV/
 .ropeproject
 .pyc
 .idea/*
+.DS_Store

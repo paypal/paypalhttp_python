@@ -83,3 +83,5 @@ except IOError as ioe:
 ### Serializer
 (De)Serialization of request and response data is done by instances of [`Encoder`](./braintreehttp/encoder.py). BraintreeHttp currently supports `json` encoding out of the box.
 
+## License
+BraintreeHttp-Python is open source and available under the MIT license. See the [LICENSE](./LICENSE) file for more info.
