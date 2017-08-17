@@ -14,7 +14,7 @@ setup(
     author_email="support@braintreepayments.com",
     packages=["braintreehttp", "braintreehttp/testutils"],
     install_requires=['requests>=2.0.0', 'six>=1.0.0', 'pyopenssl>=0.15'],
-    liscene="MIT",
+    license="MIT",
     classifiers=[
         'Intended Audience :: Developers',
         'Natural Language :: English',

@@ -85,3 +85,6 @@ except IOError as ioe:
 
 ## License
 BraintreeHttp-Python is open source and available under the MIT license. See the [LICENSE](./LICENSE) file for more info.
+
+## Contributing
+Pull requests and issues are welcome. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
