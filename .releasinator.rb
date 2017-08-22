@@ -1,9 +1,6 @@
 configatron.product_name = "BraintreeHttp Python"
 
-def clean
-  CommandProcessor.command("rm -rf dist")
-end
-
+# Custom validations
 def test
   tag = Time.now.to_i
   _test_with_dockerfile("DockerfilePython2", tag)
@@ -13,6 +10,16 @@ end
 def _test_with_dockerfile(dockerfile, tag)
   CommandProcessor.command("docker build -f #{dockerfile} -t #{tag} .")
   CommandProcessor.command("docker run #{tag}", live_output=true)
+end
+
+def package_version
+  File.open("setup.py", 'r') do |f|
+		f.each_line do |line|
+			if line.match (/^version = "\d+.\d+.\d+"$/)
+        return line.strip.split('"')[1]
+			end
+		end
+	end
 end
 
 def validate_version_match
@@ -34,14 +41,24 @@ def validate_present(tool, install_command)
   end
 end
 
-def package_version
-  File.open("setup.py", 'r') do |f|
-		f.each_line do |line|
-			if line.match (/^version = "\d+.\d+.\d+"$/)
-				return line.strip.split('"')[1]
-			end
-		end
-	end
+def validate_virtualenv
+  validate_present("virtualenv", "pip install virtualenv")
+end
+
+def validate_twine
+  validate_present("twine", "pip install twine")
+end
+
+configatron.custom_validation_methods = [
+	method(:validate_version_match),
+  method(:validate_virtualenv),
+  method(:validate_twine),
+  method(:test),
+]
+
+# Build, update version, and publish to PyPi
+def clean
+  CommandProcessor.command("rm -rf dist")
 end
 
 def build_method
@@ -59,8 +76,29 @@ python setup.py sdist bdist_wheel --universal
   end
 end
 
+configatron.build_method = method(:build_method)
+
+def update_version_method(version)
+  contents = File.read("setup.py")
+  contents = contents.gsub(/^version = "\d+.\d+.\d+"$/, "version = \"#{version}\"")
+  File.open("setup.py", "w") do |f|
+    f << contents
+  end
+end
+
+configatron.update_version_method = method(:update_version_method)
+
 def publish_to_package_manager(version)
   CommandProcessor.command("twine upload dist/*", live_output=true)
+end
+
+configatron.publish_to_package_manager_method = method(:publish_to_package_manager)
+
+def version_released?(version)
+  released_versions = `curl -s https://pypi.python.org/pypi/braintreehttp/json`
+  released_versions = JSON.parse(released_versions)
+
+  return released_versions["releases"].include? version
 end
 
 def wait_for_package_manager(version)
@@ -72,40 +110,11 @@ def wait_for_package_manager(version)
       sleep 1
     end
   end
-  "Version #{version} on package manager!"
+  "Version #{version} on PyPi!"
 end
 
-def version_released?(version)
-  released_versions = `curl -s https://pypi.python.org/pypi/braintreehttp/json`
-  released_versions = JSON.parse(released_versions)
-
-  return released_versions["releases"].include? version
-end
-
-# True if publishing the root repo to GitHub.  Required.
-configatron.release_to_github = true
-
-configatron.prerelease_checklist_items []
-
-def validate_virtualenv
-  validate_present("virtualenv", "pip install virtualenv")
-end
-
-def validate_twine
-  validate_present("twine", "pip install twine")
-end
-
-configatron.custom_validation_methods = [
-	method(:validate_version_match),
-  method(:validate_virtualenv),
-  method(:validate_twine),
-  method(:test),
-]
-
-configatron.build_method = method(:build_method)
-
-# The method that publishes the project to the package manager.  Required.
-configatron.publish_to_package_manager_method = method(:publish_to_package_manager)
-
-# The method that waits for the package manager to be done.  Required.
 configatron.wait_for_package_manager_method = method(:wait_for_package_manager)
+
+# Miscellania
+configatron.release_to_github = true
+configatron.prerelease_checklist_items []
