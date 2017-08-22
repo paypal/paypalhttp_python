@@ -78,7 +78,7 @@ end
 
 configatron.build_method = method(:build_method)
 
-def update_version_method(version)
+def update_version_method(version, semver_type)
   contents = File.read("setup.py")
   contents = contents.gsub(/^version = "\d+.\d+.\d+"$/, "version = \"#{version}\"")
   File.open("setup.py", "w") do |f|
