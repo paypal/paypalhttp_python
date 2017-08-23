@@ -49,7 +49,18 @@ class EncoderTest(unittest.TestCase):
             Encoder().serialize_request(req)
         except Exception as e:
             self.assertIsInstance(e, IOError)
-            self.assertEqual("Unable to serialize request with Content-Type application/xml. Supported encodings are [application/json]", str(e))
+            self.assertEqual("Unable to serialize request with Content-Type application/xml. Supported encodings are ['application/json', 'text/.*']", str(e))
+
+    def test_Encoder_serialize_request_withTextContentType_stringifiesData(self):
+        req = GenericRequest()
+        req.body = "some text data"
+        req.headers = {
+            "Content-Type": "text/plain"
+        }
+
+        b = Encoder().serialize_request(req)
+
+        self.assertEqual(req.body, b)
 
     def test_Encoder_deserialize_response(self):
         j = '{"key": "value", "list": ["one", "two"]}'
@@ -81,5 +92,13 @@ class EncoderTest(unittest.TestCase):
             b = Encoder().deserialize_response(j, headers)
         except IOError as e:
             self.assertIsInstance(e, IOError)
-            self.assertEqual("Unable to deserialize response with Content-Type application/xml. Supported decodings are [application/json]", str(e))
+            self.assertEqual("Unable to deserialize response with Content-Type application/xml. Supported decodings are ['application/json', 'text/.*']", str(e))
+
+    def test_Encoder_deserialize_request_withTextContentType_stringifiesData(self):
+        j = 'some plain text'
+        headers = {"Content-Type": "text/plain"}
+
+        b = Encoder().deserialize_response(j, headers)
+
+        self.assertEqual(j, b)
 
