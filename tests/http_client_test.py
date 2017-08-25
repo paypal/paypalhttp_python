@@ -96,7 +96,10 @@ class HttpClientTest(TestHarness):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
-        request.headers = {"Test": "Header"}
+        request.headers = {
+                "Test": "Header",
+                "Content-Type": "text/plain"
+                }
         request.body = "Some data"
         self.stub_request_with_empty_reponse(request)
 
@@ -115,8 +118,11 @@ class HttpClientTest(TestHarness):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
-        request.headers = {"Test": "Header"}
-        request.body = "{\"some\": \"data\"}"
+        request.headers = {
+                "Test": "Header",
+                "Content-Type": "application/json"
+                }
+        request.body = {"some": "data"}
 
         self.stub_request_with_empty_reponse(request)
 
@@ -232,50 +238,6 @@ class HttpClientTest(TestHarness):
         except BaseException as exception:
             self.fail(exception.message)
 
-    @responses.activate
-    def test_HttpClient_setsFileWhenPresent(self):
-        client = HttpClient(self.environment())
-
-        request = GenericRequest()
-        request.path = "/"
-        request.verb = "POST"
-        request.headers = {"Content-Type": "multipart/form-data"}
-        f = open(abspath('./README.md'), 'rb')
-        request.body = {'file': f}
-
-        self.stub_request_with_response(request)
-        client.execute(request)
-        f.close()
-
-        call = responses.calls[0].request
-        self.assertTrue("README" in call.body)
-        self.assertTrue("Content-Disposition: form-data" in call.body)
-
-    @responses.activate
-    def test_HttpClient_setsDataWhenFilePresent(self):
-        client = HttpClient(self.environment())
-
-        request = GenericRequest()
-        request.path = "/"
-        request.verb = "POST"
-        request.headers = {"Content-Type": "multipart/form-data"}
-        f = open(abspath('README.md'), 'rb')
-        request.body = {"some_key": "some_value", "some_nested[key]": "some_nested_value", "file": f}
-
-        self.stub_request_with_response(request)
-        client.execute(request)
-        f.close()
-
-        call = responses.calls[0].request
-
-        self.assertTrue("Content-Disposition: form-data; name=\"some_key\"" in call.body)
-        self.assertTrue("some_value" in call.body)
-        self.assertTrue("Content-Disposition: form-data; name=\"some_nested[key]\"" in call.body)
-        self.assertTrue("some_nested_value" in call.body)
-        self.assertTrue("Content-Disposition: form-data; name=\"file\"; filename=\"README.md\"" in call.body)
-
-def abspath(path):
-    return os.path.join(os.path.dirname(os.path.dirname(__file__)), path)
 
 if __name__ == '__main__':
     unittest.main()
