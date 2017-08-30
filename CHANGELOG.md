@@ -1,3 +1,7 @@
+## 0.3.0
+* HttpClient supports text/* Content-Type.
+* Use releasinator for releasing.
+
 ## 0.2.0
 * Release on PyPi.
 
@@ -17,4 +21,3 @@
 * Fix multipart data encoding issue.
 * Add support for encoding/decoding json in HttpClient.
 * Add support for multipart/form-data requests.
-
