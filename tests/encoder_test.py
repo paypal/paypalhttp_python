@@ -84,7 +84,7 @@ class EncoderTest(unittest.TestCase):
         self.assertTrue("some_nested_value" in serialized)
         self.assertTrue("Content-Disposition: form-data; name=\"file\"; filename=\"fileupload_test_binary.jpg\"" in serialized)
         self.assertTrue("Content-Type: image/jpeg" in serialized)
-        self.assertTrue(f.read() in serialized)
+        self.assertTrue(str(f.read()) in serialized)
 
         f.close()
 

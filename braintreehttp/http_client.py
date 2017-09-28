@@ -37,8 +37,8 @@ class HttpClient(object):
             request.headers["User-Agent"] = self.get_user_agent()
 
         data = None
-        if hasattr(request, 'body') and request.body != None:
-            data = self.serialize_request(request)
+        if hasattr(request, 'body') and request.body is not None:
+            data = self.encoder.serialize_request(request)
 
         resp = requests.request(method=request.verb,
                 url=self.environment.base_url + request.path,
@@ -47,19 +47,13 @@ class HttpClient(object):
 
         return self.parse_response(resp)
 
-    def serialize_request(self, request):
-        return self.encoder.serialize_request(request)
-
-    def deserialize_response(self, response_body, headers):
-        return self.encoder.deserialize_response(response_body, headers)
-
     def parse_response(self, response):
         status_code = response.status_code
 
         if 200 <= status_code <= 299:
             body = ""
             if response.text and (len(response.text) > 0 and response.text != 'None'):
-                body = self.deserialize_response(response.text, response.headers)
+                body = self.encoder.deserialize_response(response.text, response.headers)
 
             return HttpResponse(body, response.status_code, response.headers)
         else:

@@ -163,29 +163,6 @@ class HttpClientTest(TestHarness):
         self.assertIsNone(response.result)
 
     @responses.activate
-    def test_HttpClient_onSuccess_callsDeserializeResponse(self):
-
-        class DeserializingHttpClient(HttpClient):
-            def deserialize_response(self, response_body, headers):
-                return "Some data"
-
-            def serialize_request(self, request):
-                return request.request_body
-
-        client = DeserializingHttpClient(self.environment())
-
-        request = GenericRequest()
-        request.path = "/"
-        request.verb = "GET"
-        self.stub_request_with_response(request, response_body="not some data", status=201)
-
-        try:
-            response = client.execute(request)
-            self.assertEqual(response.result, "Some data")
-        except BaseException as exception:
-            self.fail(str(exception))
-
-    @responses.activate
     def test_HttpClient_parsesJSONArrayResponse(self):
         client = HttpClient(self.environment())
 
@@ -199,29 +176,6 @@ class HttpClientTest(TestHarness):
         resp = client.execute(request)
 
         self.assertEqual(resp.result, ["one", "two"])
-
-    @responses.activate
-    def test_HttpClient_whenRequestBodyNotNone_callsSerializeRequest(self):
-
-        class SerializingHttpClient(HttpClient):
-            def deserialize_response(self, response_body, headers):
-                return response_body
-
-            def serialize_request(self, request):
-                return "Serialized request"
-
-        client = SerializingHttpClient(self.environment())
-
-        request = GenericRequest()
-        request.path = "/"
-        request.verb = "GET"
-        request.body = {}
-        self.stub_request_with_response(request)
-
-        client.execute(request)
-
-        call = responses.calls[0].request
-        self.assertEqual(call.body, "Serialized request")
 
     @responses.activate
     def test_HttpClient_onSuccess_escapesDashesWhenUnmarshaling(self):
