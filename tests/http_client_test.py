@@ -96,7 +96,10 @@ class HttpClientTest(TestHarness):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
-        request.headers = {"Test": "Header"}
+        request.headers = {
+                "Test": "Header",
+                "Content-Type": "text/plain"
+                }
         request.body = "Some data"
         self.stub_request_with_empty_reponse(request)
 
@@ -115,8 +118,11 @@ class HttpClientTest(TestHarness):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
-        request.headers = {"Test": "Header"}
-        request.body = "{\"some\": \"data\"}"
+        request.headers = {
+                "Test": "Header",
+                "Content-Type": "application/json"
+                }
+        request.body = {"some": "data"}
 
         self.stub_request_with_empty_reponse(request)
 
@@ -157,29 +163,6 @@ class HttpClientTest(TestHarness):
         self.assertIsNone(response.result)
 
     @responses.activate
-    def test_HttpClient_onSuccess_callsDeserializeResponse(self):
-
-        class DeserializingHttpClient(HttpClient):
-            def deserialize_response(self, response_body, headers):
-                return "Some data"
-
-            def serialize_request(self, request):
-                return request.request_body
-
-        client = DeserializingHttpClient(self.environment())
-
-        request = GenericRequest()
-        request.path = "/"
-        request.verb = "GET"
-        self.stub_request_with_response(request, response_body="not some data", status=201)
-
-        try:
-            response = client.execute(request)
-            self.assertEqual(response.result, "Some data")
-        except BaseException as exception:
-            self.fail(str(exception))
-
-    @responses.activate
     def test_HttpClient_parsesJSONArrayResponse(self):
         client = HttpClient(self.environment())
 
@@ -193,29 +176,6 @@ class HttpClientTest(TestHarness):
         resp = client.execute(request)
 
         self.assertEqual(resp.result, ["one", "two"])
-
-    @responses.activate
-    def test_HttpClient_whenRequestBodyNotNone_callsSerializeRequest(self):
-
-        class SerializingHttpClient(HttpClient):
-            def deserialize_response(self, response_body, headers):
-                return response_body
-
-            def serialize_request(self, request):
-                return "Serialized request"
-
-        client = SerializingHttpClient(self.environment())
-
-        request = GenericRequest()
-        request.path = "/"
-        request.verb = "GET"
-        request.body = {}
-        self.stub_request_with_response(request)
-
-        client.execute(request)
-
-        call = responses.calls[0].request
-        self.assertEqual(call.body, "Serialized request")
 
     @responses.activate
     def test_HttpClient_onSuccess_escapesDashesWhenUnmarshaling(self):
@@ -232,50 +192,6 @@ class HttpClientTest(TestHarness):
         except BaseException as exception:
             self.fail(exception.message)
 
-    @responses.activate
-    def test_HttpClient_setsFileWhenPresent(self):
-        client = HttpClient(self.environment())
-
-        request = GenericRequest()
-        request.path = "/"
-        request.verb = "POST"
-        request.headers = {"Content-Type": "multipart/form-data"}
-        f = open(abspath('./README.md'), 'rb')
-        request.body = {'file': f}
-
-        self.stub_request_with_response(request)
-        client.execute(request)
-        f.close()
-
-        call = responses.calls[0].request
-        self.assertTrue("README" in call.body)
-        self.assertTrue("Content-Disposition: form-data" in call.body)
-
-    @responses.activate
-    def test_HttpClient_setsDataWhenFilePresent(self):
-        client = HttpClient(self.environment())
-
-        request = GenericRequest()
-        request.path = "/"
-        request.verb = "POST"
-        request.headers = {"Content-Type": "multipart/form-data"}
-        f = open(abspath('README.md'), 'rb')
-        request.body = {"some_key": "some_value", "some_nested[key]": "some_nested_value", "file": f}
-
-        self.stub_request_with_response(request)
-        client.execute(request)
-        f.close()
-
-        call = responses.calls[0].request
-
-        self.assertTrue("Content-Disposition: form-data; name=\"some_key\"" in call.body)
-        self.assertTrue("some_value" in call.body)
-        self.assertTrue("Content-Disposition: form-data; name=\"some_nested[key]\"" in call.body)
-        self.assertTrue("some_nested_value" in call.body)
-        self.assertTrue("Content-Disposition: form-data; name=\"file\"; filename=\"README.md\"" in call.body)
-
-def abspath(path):
-    return os.path.join(os.path.dirname(os.path.dirname(__file__)), path)
 
 if __name__ == '__main__':
     unittest.main()
