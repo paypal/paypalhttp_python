@@ -7,6 +7,12 @@ from braintreehttp.testutils import TestHarness
 
 
 class GenericRequest:
+
+    def __init__(self):
+        self.path = ""
+        self.verb = ""
+        self.headers = {}
+
     def __str__(self):
         s = ""
         for key in dir(self):
@@ -26,7 +32,9 @@ class HttpClientTest(TestHarness):
         self.stub_request_with_empty_reponse(request)
 
         client.execute(request)
-        self.assertEqual(request.headers["User-Agent"], client.get_user_agent())
+
+        call = responses.calls[0].request
+        self.assertEqual(call.headers["User-Agent"], client.get_user_agent())
 
     def testHttpClient_addInjector_throwsWhenArgumentNotFunctional(self):
         client = HttpClient(self.environment())
@@ -54,7 +62,9 @@ class HttpClientTest(TestHarness):
         self.stub_request_with_empty_reponse(request)
 
         client.execute(request)
-        self.assertEqual(request.headers["Foo"], "Bar")
+
+        call = responses.calls[0].request
+        self.assertEqual(call.headers["Foo"], "Bar")
 
     @responses.activate
     def test_HttpClient_addInjector_usesInjectorFunction(self):
@@ -72,8 +82,10 @@ class HttpClientTest(TestHarness):
         self.stub_request_with_empty_reponse(request)
 
         client.execute(request)
-        self.assertEqual(request.headers["Foo"], "Bar")
-        
+
+        call = responses.calls[0].request
+        self.assertEqual(call.headers["Foo"], "Bar")
+
     @responses.activate
     def test_HttpClient_addInjector_usesInjectorLambda(self):
         client = HttpClient(self.environment())
@@ -88,7 +100,9 @@ class HttpClientTest(TestHarness):
         self.stub_request_with_empty_reponse(request)
 
         client.execute(request)
-        self.assertFalse("Foo" in request.headers)
+
+        call = responses.calls[0].request
+        self.assertFalse("Foo" in call.headers)
 
     @responses.activate
     def test_HttpClient_execute_usesAllParamsInRequest_plaintextdata(self):
@@ -191,6 +205,19 @@ class HttpClientTest(TestHarness):
             self.assertEqual(response.result.valid_key, "valid-data")
         except BaseException as exception:
             self.fail(exception.message)
+
+    @responses.activate
+    def test_HttpClient_executeDoesNotModifyRequest(self):
+        client = HttpClient(self.environment())
+
+        request = GenericRequest()
+        request.path = "/"
+        request.verb = "GET"
+        self.stub_request_with_response(request, "{\"valid-key\": \"valid-data\"}", 201)
+
+        client.execute(request)
+
+        self.assertEquals(len(request.headers), 0)
 
 
 if __name__ == '__main__':

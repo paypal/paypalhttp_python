@@ -1,4 +1,5 @@
 import requests
+import copy
 
 from braintreehttp.encoder import Encoder
 from braintreehttp.http_response import HttpResponse
@@ -25,24 +26,26 @@ class HttpClient(object):
             raise TypeError("injector must be a function or implement the __call__ method")
 
     def execute(self, request):
+        reqCpy = copy.deepcopy(request)
+
         try:
-            getattr(request, 'headers')
+            getattr(reqCpy, 'headers')
         except AttributeError:
-            request.headers = {}
+            reqCpy.headers = {}
 
         for injector in self._injectors:
-            injector(request)
+            injector(reqCpy)
 
-        if "User-Agent" not in request.headers:
-            request.headers["User-Agent"] = self.get_user_agent()
+        if "User-Agent" not in reqCpy.headers:
+            reqCpy.headers["User-Agent"] = self.get_user_agent()
 
         data = None
-        if hasattr(request, 'body') and request.body is not None:
-            data = self.encoder.serialize_request(request)
+        if hasattr(reqCpy, 'body') and reqCpy.body is not None:
+            data = self.encoder.serialize_request(reqCpy)
 
-        resp = requests.request(method=request.verb,
-                url=self.environment.base_url + request.path,
-                headers=request.headers,
+        resp = requests.request(method=reqCpy.verb,
+                url=self.environment.base_url + reqCpy.path,
+                headers=reqCpy.headers,
                 data=data)
 
         return self.parse_response(resp)
