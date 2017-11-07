@@ -1,11 +1,14 @@
 import unittest
 import os
-
+import re
 
 from braintreehttp.encoder import Encoder
 
 class GenericRequest:
     pass
+
+def abspath(path):
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), path)
 
 class EncoderTest(unittest.TestCase):
 
@@ -36,7 +39,7 @@ class EncoderTest(unittest.TestCase):
             Encoder().serialize_request(req)
         except Exception as e:
             self.assertIsInstance(e, IOError)
-            self.assertEqual("Unable to serialize request with Content-Type application/xml. Supported encodings are ['application/json', 'text/.*', 'multipart/.*']", str(e))
+            self.assertTrue("Unable to serialize request with Content-Type application/xml. Supported encodings are " in str(e))
 
     def test_Encoder_serialize_request_withJsonContentType_stringifysData(self):
         req = GenericRequest()
@@ -88,8 +91,18 @@ class EncoderTest(unittest.TestCase):
 
         f.close()
 
-def abspath(path):
-    return os.path.join(os.path.dirname(os.path.dirname(__file__)), path)
+    def test_Encode_serialize_request_withFormEncodedContentType_stringifysData(self):
+        request = GenericRequest()
+        request.path = "/"
+        request.verb = "POST"
+        request.headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        request.body = {
+                'key': 'value',
+                'key_two': 'value with spaces'
+                }
+
+        serialized = Encoder().serialize_request(request)
+        self.assertIsNotNone(re.match('(key=value&key_two=value%20with%20spaces|key_two=value%20with%20spaces&key=value)', serialized))
 
     def test_Encoder_deserialize_response_throwsWhenHeadersNone(self):
         j = '{"key": "value", "list": ["one", "two"]}'
@@ -102,7 +115,7 @@ def abspath(path):
             self.assertIsInstance(e, IOError)
             self.assertEqual("Http response does not have Content-Type header set", str(e))
 
-    def test_Encoder_deserialize_response_throwsWhenContentTypeNotJson(self):
+    def test_Encoder_deserialize_response_throwsWhenContentTypeNotSupported(self):
         j = '{"key": "value", "list": ["one", "two"]}'
 
         headers = {"Content-Type": "application/xml"}
@@ -111,7 +124,7 @@ def abspath(path):
             b = Encoder().deserialize_response(j, headers)
         except IOError as e:
             self.assertIsInstance(e, IOError)
-            self.assertEqual("Unable to deserialize response with Content-Type application/xml. Supported decodings are ['application/json', 'text/.*']", str(e))
+            self.assertTrue("Unable to deserialize response with Content-Type application/xml. Supported decodings are " in str(e))
 
     def test_Encoder_deserialize_response_text(self):
         j = 'some plain text'
@@ -137,7 +150,17 @@ def abspath(path):
 
         try:
             b = Encoder().deserialize_response(j, headers)
+            self.fail('deserialize should have thrown with content-type multipart')
         except IOError as e:
             self.assertTrue('Multipart does not support deserialization', str(e))
 
-        self.assertEqual(j, b)
+    def test_Encoder_deserialize_response_formEncoded(self):
+        data = 'key=value&key_two=value%20with%20spaces'
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+
+        try:
+            b = Encoder().deserialize_response(data, headers)
+            self.fail('deserialize should have thrown with content-type formencoded')
+        except IOError as e:
+            self.assertTrue('FormEncoded does not support deserialization', str(e))
+

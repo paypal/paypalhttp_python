@@ -105,7 +105,7 @@ class HttpClientTest(TestHarness):
         self.assertFalse("Foo" in call.headers)
 
     @responses.activate
-    def test_HttpClient_execute_usesAllParamsInRequest_plaintextdata(self):
+    def test_HttpClient_execute_usesAllParamsInRequest(self):
         client = HttpClient(self.environment())
         request = GenericRequest()
         request.path = "/"
@@ -125,29 +125,6 @@ class HttpClientTest(TestHarness):
         self.assertEqual(call.url, "http://localhost/")
         self.assertEqual(call.headers["Test"], "Header")
         self.assertEqual(call.body, "Some data")
-
-    @responses.activate
-    def test_HttpClient_execute_usesAllParamsInRequest_json(self):
-        client = HttpClient(self.environment())
-        request = GenericRequest()
-        request.path = "/"
-        request.verb = "POST"
-        request.headers = {
-                "Test": "Header",
-                "Content-Type": "application/json"
-                }
-        request.body = {"some": "data"}
-
-        self.stub_request_with_empty_reponse(request)
-
-        client.execute(request)
-
-        self.assertEqual(len(responses.calls), 1)
-        call = responses.calls[0].request
-        self.assertEqual(call.method, "POST")
-        self.assertEqual(call.url, "http://localhost/")
-        self.assertEqual(call.headers["Test"], "Header")
-        self.assertEqual(call.body, "{\"some\": \"data\"}")
 
     @responses.activate
     def test_HttpClient_onError_throwsHttpErrorForNon200StatusCode(self):
@@ -175,21 +152,6 @@ class HttpClientTest(TestHarness):
 
         response = client.execute(request)
         self.assertIsNone(response.result)
-
-    @responses.activate
-    def test_HttpClient_parsesJSONArrayResponse(self):
-        client = HttpClient(self.environment())
-
-        request = GenericRequest()
-        request.path = "/"
-        request.verb = "GET"
-
-        response_body = '["one", "two"]'
-        self.stub_request_with_response(request, response_body=response_body)
-
-        resp = client.execute(request)
-
-        self.assertEqual(resp.result, ["one", "two"])
 
     @responses.activate
     def test_HttpClient_onSuccess_escapesDashesWhenUnmarshaling(self):
