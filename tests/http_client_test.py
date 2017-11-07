@@ -179,7 +179,7 @@ class HttpClientTest(TestHarness):
 
         client.execute(request)
 
-        self.assertEquals(len(request.headers), 0)
+        self.assertEqual(len(request.headers), 0)
 
 
 if __name__ == '__main__':
