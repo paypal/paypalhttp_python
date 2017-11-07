@@ -48,7 +48,7 @@ class EncoderTest(unittest.TestCase):
             "list": ["one", "two"]
         }
         req.headers = {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json; charset=utf8"
         }
 
         j = Encoder().serialize_request(req)
@@ -61,7 +61,7 @@ class EncoderTest(unittest.TestCase):
         req = GenericRequest()
         req.body = "some text data"
         req.headers = {
-            "Content-Type": "text/plain"
+            "Content-Type": "text/plain; charset=utf8"
         }
 
         b = Encoder().serialize_request(req)
@@ -72,7 +72,7 @@ class EncoderTest(unittest.TestCase):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
-        request.headers = {"Content-Type": "multipart/form-data"}
+        request.headers = {"Content-Type": "multipart/form-data; charset=utf8"}
         f = open(abspath('tests/resources/fileupload_test_binary.jpg'), 'rb')
         request.body = {"some_key": "some_value", "some_nested[key]": "some_nested_value", "file": f}
 
@@ -95,7 +95,7 @@ class EncoderTest(unittest.TestCase):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
-        request.headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        request.headers = {"Content-Type": "application/x-www-form-urlencoded; charset=utf8"}
         request.body = {
                 'key': 'value',
                 'key_two': 'value with spaces'
