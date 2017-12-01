@@ -1,3 +1,7 @@
+## 0.4.0
+* Support multipart and form-encoded content types.
+* Ensure content-types with trailing values are supported.
+
 ## 0.3.0
 * HttpClient supports text/* Content-Type.
 * Use releasinator for releasing.
