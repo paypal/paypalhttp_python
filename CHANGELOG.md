@@ -1,3 +1,6 @@
+## 0.4.1
+* Fix missing package in 0.4.0 release.
+
 ## 0.4.0
 * Support multipart and form-encoded content types.
 * Ensure content-types with trailing values are supported.
