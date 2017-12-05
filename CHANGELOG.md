@@ -1,3 +1,6 @@
+## 0.4.3
+* Small changes for python 3 support.
+
 ## 0.4.2
 * Ensure file handles in multipart request bodies are preserved through the copy in httpclient.execute.
 
