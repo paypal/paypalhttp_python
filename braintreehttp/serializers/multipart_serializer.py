@@ -1,6 +1,7 @@
 import time
 import os
 
+from braintreehttp import File
 
 CRLF = "\r\n"
 
@@ -13,7 +14,7 @@ class Multipart:
 
         form_params = []
         for k, v in request.body.items():
-            if hasattr(v, "read"):  # It's a file
+            if isinstance(v, File):
                 form_params.append(self.add_file_part(k, v))
             else:                   # It's a regular form param
                 form_params.append(self.add_form_field(k, v))

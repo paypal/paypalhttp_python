@@ -1,8 +1,7 @@
 import unittest
-import os
 import responses
 
-from braintreehttp import HttpClient
+from braintreehttp import HttpClient, File
 from braintreehttp.testutils import TestHarness
 
 
@@ -181,6 +180,25 @@ class HttpClientTest(TestHarness):
 
         self.assertEqual(len(request.headers), 0)
 
+    @responses.activate
+    def test_HttpClient_execute_filesArePreservedInCopy(self):
+        client = HttpClient(self.environment())
+
+        request = GenericRequest()
+        request.path = "/"
+        request.verb = "GET"
+        request.headers["Content-Type"] = "multipart/related"
+
+        license = File("LICENSE")
+
+        request.body = {
+                "license": license
+                }
+
+        self.stub_request_with_empty_reponse(request)
+
+        client.execute(request)
+        self.assertTrue(license.read() in responses.calls[0].request.body)
 
 if __name__ == '__main__':
     unittest.main()

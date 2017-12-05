@@ -2,6 +2,7 @@ import unittest
 import os
 import re
 
+from braintreehttp import File
 from braintreehttp.encoder import Encoder
 
 class GenericRequest:
@@ -73,10 +74,8 @@ class EncoderTest(unittest.TestCase):
         request.path = "/"
         request.verb = "POST"
         request.headers = {"Content-Type": "multipart/form-data; charset=utf8"}
-        f = open(abspath('tests/resources/fileupload_test_binary.jpg'), 'rb')
+        f = File(abspath('tests/resources/fileupload_test_binary.jpg'), 'rb')
         request.body = {"some_key": "some_value", "some_nested[key]": "some_nested_value", "file": f}
-
-        file_data = f.read()
 
         serialized = Encoder().serialize_request(request)
         self.assertTrue("multipart/form-data; boundary=" in request.headers["Content-Type"])
