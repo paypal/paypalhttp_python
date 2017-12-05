@@ -8,13 +8,20 @@ class FileTest(unittest.TestCase):
         handle = open('CHANGELOG.md', 'rb')
 
         f = File.fromhandle(handle)
-        self.assertEquals('rb', f.mode)
-        self.assertEquals('CHANGELOG.md', f.name)
+        self.assertEqual('rb', f.mode)
+        self.assertEqual('CHANGELOG.md', f.name)
+
+        f.close()
+        handle.close()
 
     def testRead(self):
         f = File('CHANGELOG.md', 'r')
 
-        self.assertEquals(open('CHANGELOG.md').read(), f.read())
+        handle = open('CHANGELOG.md')
+        self.assertEqual(handle.read(), f.read())
+
+        f.close()
+        handle.close()
 
     def testRead_throwsIfClosed(self):
         f = File('CHANGELOG.md', 'r')
@@ -26,7 +33,13 @@ class FileTest(unittest.TestCase):
             f.read()
             self.fail('File.read() should have thrown an IOError after closing')
         except IOError as error:
-            self.assertEquals('Open of closed file', error.message)
+            self.assertEqual('Open of closed file', str(error))
+
+    def testRead_allowsMultipleReads(self):
+        f = File('CHANGELOG.md', 'r')
+
+        contents = f.read()
+        self.assertEqual(contents, f.read())
 
     def testClose(self):
         f = File('CHANGELOG.md', 'r')

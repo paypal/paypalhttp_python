@@ -74,7 +74,9 @@ class EncoderTest(unittest.TestCase):
         request.path = "/"
         request.verb = "POST"
         request.headers = {"Content-Type": "multipart/form-data; charset=utf8"}
-        f = File(abspath('tests/resources/fileupload_test_binary.jpg'), 'rb')
+        f = File(abspath('tests/resources/fileupload_test_binary.jpg'))
+        data = f.read()
+
         request.body = {"some_key": "some_value", "some_nested[key]": "some_nested_value", "file": f}
 
         serialized = Encoder().serialize_request(request)
@@ -86,7 +88,7 @@ class EncoderTest(unittest.TestCase):
         self.assertTrue("some_nested_value" in serialized)
         self.assertTrue("Content-Disposition: form-data; name=\"file\"; filename=\"fileupload_test_binary.jpg\"" in serialized)
         self.assertTrue("Content-Type: image/jpeg" in serialized)
-        self.assertTrue(str(f.read()) in serialized)
+        self.assertTrue(str(data) in serialized)
 
         f.close()
 

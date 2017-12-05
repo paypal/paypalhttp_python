@@ -6,6 +6,7 @@ class File(object):
 
     def __init__(self, name, mode='rb'):
         self._handle = None
+        self._data = None
 
         self.mode = mode
         self.closed = False
@@ -14,7 +15,11 @@ class File(object):
     def read(self):
         self.open()
 
-        return self._handle.read()
+        if self._data:
+            return self._data
+        else:
+            self._data = self._handle.read()
+            return self._data
 
     def close(self):
         if self._handle:

@@ -198,7 +198,9 @@ class HttpClientTest(TestHarness):
         self.stub_request_with_empty_reponse(request)
 
         client.execute(request)
-        self.assertTrue(license.read() in responses.calls[0].request.body)
+        self.assertTrue(str(license.read()) in responses.calls[0].request.body)
+
+        license.close()
 
 if __name__ == '__main__':
     unittest.main()
