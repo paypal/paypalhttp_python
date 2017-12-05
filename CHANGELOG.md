@@ -1,3 +1,6 @@
+## 0.4.2
+* Ensure file handles in multipart request bodies are preserved through the copy in httpclient.execute.
+
 ## 0.4.1
 * Fix missing package in 0.4.0 release.
 
