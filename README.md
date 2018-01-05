@@ -1,4 +1,4 @@
-## Braintree HttpClient
+## Braintree HttpClient [![Build Status](https://travis-ci.org/braintree/braintreehttp_python.svg?branch=master)](https://travis-ci.org/braintree/braintreehttp_python)
 
 BraintreeHttp is a generic HTTP Client.
 
