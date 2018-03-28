@@ -4,14 +4,14 @@ import copy
 from braintreehttp.encoder import Encoder
 from braintreehttp.http_response import HttpResponse
 from braintreehttp.http_error import HttpError
-
+from braintreehttp.serializers import Json, Text, Multipart, FormEncoded
 
 class HttpClient(object):
 
     def __init__(self, environment):
         self._injectors = []
         self.environment = environment
-        self.encoder = Encoder()
+        self.encoder = Encoder([Json(), Text(), Multipart(), FormEncoded()])
 
     def get_user_agent(self):
         return "Python HTTP/1.1"

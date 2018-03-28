@@ -1,13 +1,10 @@
 import re
 import os
 
-from braintreehttp.serializers import Json, Text, Multipart, FormEncoded
-
-
 class Encoder(object):
 
-    def __init__(self):
-        self.encoders = [Json(), Text(), Multipart(), FormEncoded()]
+    def __init__(self, encoders):
+        self.encoders = encoders
 
     def serialize_request(self, httprequest):
         if hasattr(httprequest, "headers") and "Content-Type" in httprequest.headers:
