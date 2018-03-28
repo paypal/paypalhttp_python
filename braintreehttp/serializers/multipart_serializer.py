@@ -69,6 +69,8 @@ class Multipart:
             return "image/jpeg"
         elif extension == ".png":
             return "image/png"
+        elif extension == ".gif":
+            return "image/gif"
         elif extension == ".pdf":
             return "application/pdf"
         else:
