@@ -18,15 +18,19 @@ class Multipart:
         boundary = str(time.time()).replace(".", "")
         request.headers["Content-Type"] = "multipart/form-data; boundary=" + boundary
 
+        params = []
         form_params = []
+        file_params = []
         for k, v in request.body.items():
             if isinstance(v, File):
-                form_params.append(self.add_file_part(k, v))
+                file_params.append(self.add_file_part(k, v))
             elif isinstance(v, FormPart):
                 form_params.append(self.add_form_part(k, v))
             else:                   # It's a regular form param
                 form_params.append(self.add_form_field(k, v))
-        data = "--" + boundary + CRLF + ("--" + boundary + CRLF).join(form_params) + CRLF + "--" + boundary + "--"
+
+        params = form_params + file_params
+        data = "--" + boundary + CRLF + ("--" + boundary + CRLF).join(params) + CRLF + "--" + boundary + "--"
 
         return data
 

@@ -104,8 +104,8 @@ class EncoderTest(unittest.TestCase):
         data = f.read()
 
         request.body = {
-            "input": FormPart({"key": "val"}, {"Content-Type": "application/json"}),
-            "file": f
+            "file": f,
+            "input": FormPart({"key": "val"}, {"Content-Type": "application/json"})
         }
 
         serialized = Encoder([Json(), Text(), Multipart(), FormEncoded()]).serialize_request(request)
@@ -116,6 +116,7 @@ class EncoderTest(unittest.TestCase):
         self.assertTrue("Content-Disposition: form-data; name=\"file\"; filename=\"fileupload_test_binary.jpg\"" in serialized)
         self.assertTrue("Content-Type: image/jpeg" in serialized)
         self.assertTrue(str(data) in serialized)
+        self.assertIsNotNone(re.search('.*input.json.*fileupload_test_binary.jpg.*', serialized, re.MULTILINE | re.DOTALL))
 
         f.close()
 
