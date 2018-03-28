@@ -95,6 +95,30 @@ class EncoderTest(unittest.TestCase):
 
         f.close()
 
+    def test_Encoder_serialize_request_withMultipartContentType_encodesFormPart(self):
+        request = GenericRequest()
+        request.path = "/"
+        request.verb = "POST"
+        request.headers = {"Content-Type": "multipart/form-data; charset=utf8"}
+        f = File(abspath('tests/resources/fileupload_test_binary.jpg'))
+        data = f.read()
+
+        request.body = {
+            "input": FormPart({"key": "val"}, {"Content-Type": "application/json"}),
+            "file": f
+        }
+
+        serialized = Encoder([Json(), Text(), Multipart(), FormEncoded()]).serialize_request(request)
+        self.assertTrue("multipart/form-data; boundary=" in request.headers["Content-Type"])
+
+        self.assertTrue("Content-Disposition: form-data; name=\"input\"; filename=\"input.json\"" in serialized)
+        self.assertTrue("{\"key\": \"val\"}" in serialized)
+        self.assertTrue("Content-Disposition: form-data; name=\"file\"; filename=\"fileupload_test_binary.jpg\"" in serialized)
+        self.assertTrue("Content-Type: image/jpeg" in serialized)
+        self.assertTrue(str(data) in serialized)
+
+        f.close()
+
     def test_Encode_serialize_request_withFormEncodedContentType_stringifysData(self):
         request = GenericRequest()
         request.path = "/"
