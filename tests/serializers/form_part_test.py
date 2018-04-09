@@ -4,7 +4,7 @@ from braintreehttp.testutils import TestHarness
 
 from braintreehttp.serializers import FormPart
 
-class FormPartTest(TestHarness):
+class FormPartTest(unittest.TestCase):
     def test_init_lowercase_headers(self):
         form_part = FormPart({ "key": "value" }, { "content-type": "application/json" })
 

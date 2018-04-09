@@ -4,9 +4,8 @@ import re
 
 from braintreehttp import File
 from braintreehttp.encoder import Encoder
-from braintreehttp.serializers import FormPart
 
-from braintreehttp.serializers import Json, Text, Multipart, FormEncoded
+from braintreehttp.serializers import Json, FormPart, Text, Multipart, FormEncoded
 
 class GenericRequest:
     pass
