@@ -1,3 +1,6 @@
+## 0.5.0
+* Add support for multipart/form-data file uploads with JSON content FormParts.
+
 ## 0.4.3
 * Small changes for python 3 support.
 
