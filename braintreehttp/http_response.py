@@ -8,7 +8,7 @@ def setattr_mixed(dest, key, value):
 def construct_object(name, data, cls=object):
     if isinstance(data, dict):
         iterator = iter(data)
-        dest = type(str(name), (cls,), {})
+        dest = Result(data)
     elif isinstance(data, list):
         iterator = range(len(data))
         dest = []
@@ -31,6 +31,21 @@ def construct_object(name, data, cls=object):
             setattr_mixed(dest, k, v)
 
     return dest
+
+
+class Result(object):
+
+    def __init__(self, data):
+        self._dict = data;
+
+    def dict(self):
+        return self._dict
+
+    def __contains__(self, key):
+        return key in self._dict
+
+    def __getitem__(self, key):
+        return self._dict[key]
 
 
 class HttpResponse(object):

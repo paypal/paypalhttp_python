@@ -95,6 +95,89 @@ class HttpResponseTest(unittest.TestCase):
         resp = HttpResponse({}, 200)
         self.assertIsNone(resp.result)
 
+    def testHttpResponse_dict_returnsDataAsDictionary(self):
+        obj = {
+            "int": 100,
+            "str": "value",
+            "list": [
+                [
+                    {
+                        "key": "value",
+                        "key_two": ["value_two"]
+                    }
+                ],
+                [
+                    {
+                        "key_three": "value_three",
+                        "key_four": "value_four"
+                    }
+                ]
+            ],
+        }
+
+        resp = HttpResponse(obj, 200)
+        self.assertDictEqual(obj, resp.result.dict())
+
+    def testHttpResponse_resultSuportsInOperator(self):
+        obj = {
+            "int": 100,
+            "str": "value",
+            "list": [
+                [
+                    {
+                        "key": "value",
+                        "key_two": ["value_two"]
+                    }
+                ],
+                [
+                    {
+                        "key_three": "value_three",
+                        "key_four": "value_four"
+                    }
+                ]
+            ],
+        }
+
+        resp = HttpResponse(obj, 200)
+
+        self.assertTrue('int' in resp.result)
+    
+    def testHttpResponse_listResultSuportsInOperator(self):
+        obj = ['one', 'two', 'three']
+
+        resp = HttpResponse(obj, 200)
+
+        self.assertTrue('one' in resp.result)
+
+    def testHttpResponse_supportsIndexOperator(self):
+        obj = {
+            "int": 100,
+            "str": "value",
+            "list": [
+                [
+                    {
+                        "key": "value",
+                        "key_two": ["value_two"]
+                    }
+                ],
+                [
+                    {
+                        "key_three": "value_three",
+                        "key_four": "value_four"
+                    }
+                ]
+            ],
+        }
+
+        resp = HttpResponse(obj, 200)
+
+        self.assertEquals(100, resp.result['int'])
+        self.assertEquals('value', resp.result['str'])
+        self.assertEquals('value', resp.result['list'][0][0]['key'])
+        self.assertEquals('value_two', resp.result['list'][0][0]['key_two'][0])
+        self.assertEquals('value_three', resp.result['list'][1][0]['key_three'])
+        self.assertEquals('value_four', resp.result['list'][1][0]['key_four'])
+
 
 if __name__ == '__main__':
     unittest.main()
