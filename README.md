@@ -67,15 +67,14 @@ try:
   status_code = resp.status_code
   headers = resp.headers
   response_data = resp.result
+except HttpError as err:
+  # Inspect this exception for details
+  status_code = err.status_code
+  headers = err.headers
+  message = str(err)
 except IOError as ioe:
-  if isinstance(ioe, HttpException):
-    # Inspect this exception for details
-    status_code = ioe.status_code
-    headers = ioe.headers
-    message = str(ioe)
-  else:
-    # Something else went wrong
-    print ioe
+  # Something else went wrong
+  print ioe
 ```
 
 ### Serializer
