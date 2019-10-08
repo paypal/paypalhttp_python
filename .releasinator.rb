@@ -1,4 +1,4 @@
-configatron.product_name = "BraintreeHttp Python"
+configatron.product_name = "PayPalHttp Python"
 
 # Custom validations
 def test

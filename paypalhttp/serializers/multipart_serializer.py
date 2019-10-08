@@ -1,11 +1,11 @@
 import time
 import os
 
-from braintreehttp import  File
-from braintreehttp.encoder import Encoder
-from braintreehttp.serializers.form_part import FormPart
+from paypalhttp import  File
+from paypalhttp.encoder import Encoder
+from paypalhttp.serializers.form_part import FormPart
 
-from braintreehttp.serializers import Json, Text, FormEncoded
+from paypalhttp.serializers import Json, Text, FormEncoded
 
 CRLF = "\r\n"
 

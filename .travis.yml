@@ -7,8 +7,3 @@ python:
   - "3.5"
 before_script: pip install -r requirements.txt
 script: python -m unittest tests
-notifications:
-  email:
-    recipients:
-      - external-ci-notifications+braintreehttp@getbraintree.com
-    on_success: change

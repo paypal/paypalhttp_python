@@ -1,1 +1,0 @@
-from braintreehttp.testutils.testharness import TestHarness

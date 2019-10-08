@@ -1,4 +1,4 @@
-# Contribute to the Braintree Python HttpClient
+# Contribute to the PayPal Python HttpClient
 
 ### *Pull requests are welcome!*
 

@@ -1,12 +1,12 @@
 import responses
 import unittest
 import json
-import braintreehttp
+import paypalhttp
 
 class TestHarness(unittest.TestCase):
 
     def environment(self):
-        return braintreehttp.Environment("http://localhost")
+        return paypalhttp.Environment("http://localhost")
 
     def stub_request_with_empty_reponse(self, request):
         self.stub_request_with_response(request)

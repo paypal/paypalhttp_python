@@ -2,10 +2,10 @@ import unittest
 import os
 import re
 
-from braintreehttp import File
-from braintreehttp.encoder import Encoder
+from paypalhttp import File
+from paypalhttp.encoder import Encoder
 
-from braintreehttp.serializers import Json, FormPart, Text, Multipart, FormEncoded
+from paypalhttp.serializers import Json, FormPart, Text, Multipart, FormEncoded
 
 class GenericRequest:
     pass
@@ -141,7 +141,7 @@ class EncoderTest(unittest.TestCase):
             b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).deserialize_response(j, headers)
         except IOError as e:
             self.assertIsInstance(e, IOError)
-            self.assertEqual("Http response does not have Content-Type header set", str(e))
+            self.assertEqual("Http response does not have content-type header set", str(e))
 
     def test_Encoder_deserialize_response_throwsWhenContentTypeNotSupported(self):
         j = '{"key": "value", "list": ["one", "two"]}'
@@ -152,7 +152,7 @@ class EncoderTest(unittest.TestCase):
             b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).deserialize_response(j, headers)
         except IOError as e:
             self.assertIsInstance(e, IOError)
-            self.assertTrue("Unable to deserialize response with Content-Type application/xml. Supported decodings are " in str(e))
+            self.assertTrue("Unable to deserialize response with content-type application/xml. Supported decodings are " in str(e))
 
     def test_Encoder_deserialize_response_text(self):
         j = 'some plain text'

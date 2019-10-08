@@ -1,10 +1,10 @@
 import requests
 import copy
 
-from braintreehttp.encoder import Encoder
-from braintreehttp.http_response import HttpResponse
-from braintreehttp.http_error import HttpError
-from braintreehttp.serializers import Json, Text, Multipart, FormEncoded
+from paypalhttp.encoder import Encoder
+from paypalhttp.http_response import HttpResponse
+from paypalhttp.http_error import HttpError
+from paypalhttp.serializers import Json, Text, Multipart, FormEncoded
 
 class HttpClient(object):
 
@@ -23,7 +23,9 @@ class HttpClient(object):
         if injector and '__call__' in dir(injector):
             self._injectors.append(injector)
         else:
-            raise TypeError("injector must be a function or implement the __call__ method")
+            message = "injector must be a function or implement the __call__ method"
+            print(message)
+            raise TypeError(message)
 
     def execute(self, request):
         reqCpy = copy.deepcopy(request)
@@ -36,12 +38,12 @@ class HttpClient(object):
         for injector in self._injectors:
             injector(reqCpy)
 
-        if "User-Agent" not in reqCpy.headers:
-            reqCpy.headers["User-Agent"] = self.get_user_agent()
-
         data = None
         if hasattr(reqCpy, 'body') and reqCpy.body is not None:
             data = self.encoder.serialize_request(reqCpy)
+
+        if "user-agent" not in reqCpy.headers:
+            reqCpy.headers["user-agent"] = self.get_user_agent()
 
         resp = requests.request(method=reqCpy.verb,
                 url=self.environment.base_url + reqCpy.path,
