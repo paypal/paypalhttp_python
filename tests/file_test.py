@@ -1,6 +1,6 @@
 import unittest
 
-from braintreehttp import File
+from paypalhttp import File
 
 class FileTest(unittest.TestCase):
 
