@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "0.5.0"
+version = "1.0.0"
 
 long_description = """
 	PayPalHttp is a generic http client designed to be used with code-generated projects.
@@ -25,6 +25,8 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
