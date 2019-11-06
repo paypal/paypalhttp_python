@@ -1,5 +1,5 @@
 import unittest
-from braintreehttp import HttpResponse
+from paypalhttp import HttpResponse
 
 
 class HttpResponseTest(unittest.TestCase):

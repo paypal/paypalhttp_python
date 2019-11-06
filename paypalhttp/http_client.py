@@ -1,10 +1,11 @@
 import requests
 import copy
 
-from braintreehttp.encoder import Encoder
-from braintreehttp.http_response import HttpResponse
-from braintreehttp.http_error import HttpError
-from braintreehttp.serializers import Json, Text, Multipart, FormEncoded
+from paypalhttp.encoder import Encoder
+from paypalhttp.http_response import HttpResponse
+from paypalhttp.http_error import HttpError
+from paypalhttp.serializers import Json, Text, Multipart, FormEncoded
+
 
 class HttpClient(object):
 
@@ -23,7 +24,9 @@ class HttpClient(object):
         if injector and '__call__' in dir(injector):
             self._injectors.append(injector)
         else:
-            raise TypeError("injector must be a function or implement the __call__ method")
+            message = "injector must be a function or implement the __call__ method"
+            print(message)
+            raise TypeError(message)
 
     def execute(self, request):
         reqCpy = copy.deepcopy(request)
@@ -36,19 +39,34 @@ class HttpClient(object):
         for injector in self._injectors:
             injector(reqCpy)
 
-        if "User-Agent" not in reqCpy.headers:
-            reqCpy.headers["User-Agent"] = self.get_user_agent()
-
         data = None
+
+        formatted_headers = self.format_headers(reqCpy.headers)
+
+        if "user-agent" not in formatted_headers:
+            reqCpy.headers["user-agent"] = self.get_user_agent()
+
         if hasattr(reqCpy, 'body') and reqCpy.body is not None:
+            raw_headers = reqCpy.headers
+            reqCpy.headers = formatted_headers
             data = self.encoder.serialize_request(reqCpy)
+            reqCpy.headers = self.map_headers(raw_headers, formatted_headers)
 
         resp = requests.request(method=reqCpy.verb,
-                url=self.environment.base_url + reqCpy.path,
-                headers=reqCpy.headers,
-                data=data)
+                                url=self.environment.base_url + reqCpy.path,
+                                headers=reqCpy.headers,
+                                data=data)
 
         return self.parse_response(resp)
+
+    def format_headers(self, headers):
+        return dict((k.lower(), v) for k, v in headers.items())
+
+    def map_headers(self, raw_headers, formatted_headers):
+        for header_name in raw_headers:
+            if header_name.lower() in formatted_headers:
+                raw_headers[header_name] = formatted_headers[header_name.lower()]
+        return raw_headers
 
     def parse_response(self, response):
         status_code = response.status_code
@@ -56,10 +74,8 @@ class HttpClient(object):
         if 200 <= status_code <= 299:
             body = ""
             if response.text and (len(response.text) > 0 and response.text != 'None'):
-                body = self.encoder.deserialize_response(response.text, response.headers)
+                body = self.encoder.deserialize_response(response.text, self.format_headers(response.headers))
 
             return HttpResponse(body, response.status_code, response.headers)
         else:
             raise HttpError(response.text, response.status_code, response.headers)
-
-

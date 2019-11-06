@@ -3,16 +3,15 @@ from setuptools import setup
 version = "0.5.0"
 
 long_description = """
-	BraintreeHttp is a generic http client designed to be used with code-generated projects.
+	PayPalHttp is a generic http client designed to be used with code-generated projects.
 """
 
 setup(
-    name="braintreehttp",
+    name="paypalhttp",
     long_description=long_description,
     version=version,
-    author="Braintree",
-    author_email="support@braintreepayments.com",
-    packages=["braintreehttp", "braintreehttp/testutils", "braintreehttp/serializers"],
+    author="PayPal",
+    packages=["paypalhttp", "paypalhttp/testutils", "paypalhttp/serializers"],
     install_requires=['requests>=2.0.0', 'six>=1.0.0', 'pyopenssl>=0.15'],
     license="MIT",
     classifiers=[

@@ -2,10 +2,10 @@ import unittest
 import os
 import re
 
-from braintreehttp import File
-from braintreehttp.encoder import Encoder
+from paypalhttp import File
+from paypalhttp.encoder import Encoder
 
-from braintreehttp.serializers import Json, FormPart, Text, Multipart, FormEncoded
+from paypalhttp.serializers import Json, FormPart, Text, Multipart, FormEncoded
 
 class GenericRequest:
     pass
@@ -26,7 +26,7 @@ class EncoderTest(unittest.TestCase):
             Encoder([Json(), Text(), Multipart(), FormEncoded()]).serialize_request(req)
         except Exception as e:
             self.assertIsInstance(e, IOError)
-            self.assertEqual("Http request does not have Content-Type header set", str(e))
+            self.assertEqual("Http request does not have content-type header set", str(e))
 
     def test_Encoder_serialize_request_throwsWhenContentTypeNotJson(self):
         req = GenericRequest()
@@ -51,7 +51,7 @@ class EncoderTest(unittest.TestCase):
             "list": ["one", "two"]
         }
         req.headers = {
-            "Content-Type": "application/json; charset=utf8"
+            "content-type": "application/json; charset=utf8"
         }
 
         j = Encoder([Json(), Text(), Multipart(), FormEncoded()]).serialize_request(req)
@@ -64,25 +64,24 @@ class EncoderTest(unittest.TestCase):
         req = GenericRequest()
         req.body = "some text data"
         req.headers = {
-            "Content-Type": "text/plain; charset=utf8"
+            "content-type": "text/plain; charset=utf8"
         }
 
         b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).serialize_request(req)
-
         self.assertEqual(req.body, b)
 
     def test_Encoder_serialize_request_withMultipartContentType_stringifysData(self):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
-        request.headers = {"Content-Type": "multipart/form-data; charset=utf8"}
+        request.headers = {"content-type": "multipart/form-data; charset=utf8"}
         f = File(abspath('tests/resources/fileupload_test_binary.jpg'))
         data = f.read()
 
         request.body = {"some_key": "some_value", "some_nested[key]": "some_nested_value", "file": f}
 
         serialized = Encoder([Json(), Text(), Multipart(), FormEncoded()]).serialize_request(request)
-        self.assertTrue("multipart/form-data; boundary=" in request.headers["Content-Type"])
+        self.assertTrue("multipart/form-data; boundary=" in request.headers["content-type"])
 
         self.assertTrue("Content-Disposition: form-data; name=\"some_key\"" in serialized)
         self.assertTrue("some_value" in serialized)
@@ -98,7 +97,7 @@ class EncoderTest(unittest.TestCase):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
-        request.headers = {"Content-Type": "multipart/form-data; charset=utf8"}
+        request.headers = {"content-type": "multipart/form-data; charset=utf8"}
         f = File(abspath('tests/resources/fileupload_test_binary.jpg'))
         data = f.read()
 
@@ -108,7 +107,7 @@ class EncoderTest(unittest.TestCase):
         }
 
         serialized = Encoder([Json(), Text(), Multipart(), FormEncoded()]).serialize_request(request)
-        self.assertTrue("multipart/form-data; boundary=" in request.headers["Content-Type"])
+        self.assertTrue("multipart/form-data; boundary=" in request.headers["content-type"])
 
         self.assertTrue("Content-Disposition: form-data; name=\"input\"; filename=\"input.json\"" in serialized)
         self.assertTrue("{\"key\": \"val\"}" in serialized)
@@ -123,7 +122,7 @@ class EncoderTest(unittest.TestCase):
         request = GenericRequest()
         request.path = "/"
         request.verb = "POST"
-        request.headers = {"Content-Type": "application/x-www-form-urlencoded; charset=utf8"}
+        request.headers = {"content-type": "application/x-www-form-urlencoded; charset=utf8"}
         request.body = {
             'key': 'value',
             'key_two': 'value with spaces'
@@ -141,22 +140,22 @@ class EncoderTest(unittest.TestCase):
             b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).deserialize_response(j, headers)
         except IOError as e:
             self.assertIsInstance(e, IOError)
-            self.assertEqual("Http response does not have Content-Type header set", str(e))
+            self.assertEqual("Http response does not have content-type header set", str(e))
 
     def test_Encoder_deserialize_response_throwsWhenContentTypeNotSupported(self):
         j = '{"key": "value", "list": ["one", "two"]}'
 
-        headers = {"Content-Type": "application/xml"}
+        headers = {"content-type": "application/xml"}
 
         try:
             b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).deserialize_response(j, headers)
         except IOError as e:
             self.assertIsInstance(e, IOError)
-            self.assertTrue("Unable to deserialize response with Content-Type application/xml. Supported decodings are " in str(e))
+            self.assertTrue("Unable to deserialize response with content-type application/xml. Supported decodings are " in str(e))
 
     def test_Encoder_deserialize_response_text(self):
         j = 'some plain text'
-        headers = {"Content-Type": "text/plain"}
+        headers = {"content-type": "text/plain"}
 
         b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).deserialize_response(j, headers)
 
@@ -165,7 +164,7 @@ class EncoderTest(unittest.TestCase):
     def test_Encoder_deserialize_response_Json(self):
         j = '{"key": "value", "list": ["one", "two"]}'
 
-        headers = {"Content-Type": "application/json"}
+        headers = {"content-type": "application/json"}
 
         b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).deserialize_response(j, headers)
 
@@ -174,7 +173,7 @@ class EncoderTest(unittest.TestCase):
 
     def test_Encoder_deserialize_response_multipart(self):
         j = 'some plain text'
-        headers = {"Content-Type": "multipart/form-data"}
+        headers = {"content-type": "multipart/form-data"}
 
         try:
             b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).deserialize_response(j, headers)

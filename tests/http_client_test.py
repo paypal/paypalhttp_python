@@ -1,8 +1,8 @@
 import unittest
 import responses
 
-from braintreehttp import HttpClient, File
-from braintreehttp.testutils import TestHarness
+from paypalhttp import HttpClient, File
+from paypalhttp.testutils import TestHarness
 
 
 class GenericRequest:

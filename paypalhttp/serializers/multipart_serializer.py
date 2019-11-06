@@ -1,11 +1,11 @@
 import time
 import os
 
-from braintreehttp import  File
-from braintreehttp.encoder import Encoder
-from braintreehttp.serializers.form_part import FormPart
+from paypalhttp import  File
+from paypalhttp.encoder import Encoder
+from paypalhttp.serializers.form_part import FormPart
 
-from braintreehttp.serializers import Json, Text, FormEncoded
+from paypalhttp.serializers import Json, Text, FormEncoded
 
 CRLF = "\r\n"
 
@@ -16,8 +16,7 @@ class Multipart:
 
     def encode(self, request):
         boundary = str(time.time()).replace(".", "")
-        request.headers["Content-Type"] = "multipart/form-data; boundary=" + boundary
-
+        request.headers["content-type"] = "multipart/form-data; boundary=" + boundary
         params = []
         form_params = []
         file_params = []
@@ -45,7 +44,8 @@ class Multipart:
 
     def add_form_part(self, key, formPart):
         retValue =  "Content-Disposition: form-data; name=\"{}\"".format(key)
-        if formPart.headers["Content-Type"] == "application/json":
+        formatted_headers = self.format_headers(formPart.headers)
+        if formatted_headers["content-type"] == "application/json":
             retValue += "; filename=\"{}.json\"".format(key)
         retValue += CRLF
 
@@ -55,7 +55,7 @@ class Multipart:
         retValue += CRLF
 
         req = FormPartRequest()
-        req.headers = formPart.headers
+        req.headers = formatted_headers
         req.body = formPart.value
         retValue += Encoder([Json(), Text(), FormEncoded()]).serialize_request(req)
 
@@ -66,6 +66,10 @@ class Multipart:
         mime_type = self.mime_type_for_filename(os.path.basename(f.name))
         s = "Content-Disposition: form-data; name=\"{}\"; filename=\"{}\"{}".format(key, os.path.basename(f.name), CRLF)
         return s + "Content-Type: {}{}{}{}{}".format(mime_type, CRLF, CRLF, f.read(), CRLF)
+
+    def format_headers(self, headers):
+        if headers:
+            return dict((k.lower(), v) for k, v in headers.items())
 
     def mime_type_for_filename(self, filename):
         _, extension = os.path.splitext(filename)
