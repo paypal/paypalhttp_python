@@ -1,4 +1,5 @@
 import requests
+import asyncio
 import copy
 
 from paypalhttp.encoder import Encoder
@@ -8,11 +9,27 @@ from paypalhttp.serializers import Json, Text, Multipart, FormEncoded
 
 
 class HttpClient(object):
-
     def __init__(self, environment):
         self._injectors = []
         self.environment = environment
+        self.request_executor = requests.request
         self.encoder = Encoder([Json(), Text(), Multipart(), FormEncoded()])
+
+    def __getattr__(self, attribute):
+        if attribute == 'execute':
+            if asyncio.iscoroutinefunction(self.req_executor):
+                return self.execute_async
+            return self.execute_sync
+
+        return super().__getattr__(attribute)
+
+    async def execute_async(self, request):
+        response = await self.req_executor(**self.prepare(request))
+        return self.parse_response(response)
+
+    def execute_sync(self, request):
+        response = self.req_executor(**self.prepare(request))
+        return self.parse_response(response)
 
     def get_user_agent(self):
         return "Python HTTP/1.1"
@@ -28,7 +45,7 @@ class HttpClient(object):
             print(message)
             raise TypeError(message)
 
-    def execute(self, request):
+    def prepare(self, request):
         reqCpy = copy.deepcopy(request)
 
         try:
@@ -52,12 +69,10 @@ class HttpClient(object):
             data = self.encoder.serialize_request(reqCpy)
             reqCpy.headers = self.map_headers(raw_headers, formatted_headers)
 
-        resp = requests.request(method=reqCpy.verb,
-                                url=self.environment.base_url + reqCpy.path,
-                                headers=reqCpy.headers,
-                                data=data)
-
-        return self.parse_response(resp)
+        return dict(method=reqCpy.verb,
+                    url=self.environment.base_url + reqCpy.path,
+                    headers=reqCpy.headers,
+                    data=data)
 
     def format_headers(self, headers):
         return dict((k.lower(), v) for k, v in headers.items())
