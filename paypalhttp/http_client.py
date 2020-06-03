@@ -12,7 +12,7 @@ class HttpClient(object):
     def __init__(self, environment):
         self._injectors = []
         self.environment = environment
-        self.request_executor = requests.request
+        self.req_executor = requests.request
         self.encoder = Encoder([Json(), Text(), Multipart(), FormEncoded()])
 
     def __getattr__(self, attribute):
@@ -20,8 +20,7 @@ class HttpClient(object):
             if asyncio.iscoroutinefunction(self.req_executor):
                 return self.execute_async
             return self.execute_sync
-
-        return super().__getattr__(attribute)
+        raise AttributeError()
 
     async def execute_async(self, request):
         response = await self.req_executor(**self.prepare(request))
