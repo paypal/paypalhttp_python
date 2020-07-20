@@ -15,7 +15,7 @@ class TestHarness(unittest.TestCase):
     def stub_request_with_response(self, request, response_body="", status=200, content_type="application/json"):
         body = None
         if response_body:
-            if isinstance(response_body, str):
+            if isinstance(response_body, (bytes, str)):
                 body = response_body
             else:
                 body = json.dumps(response_body)

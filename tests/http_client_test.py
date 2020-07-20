@@ -202,5 +202,18 @@ class HttpClientTest(TestHarness):
 
         license.close()
 
+    @responses.activate
+    def test_HttpClient_encoding(self):
+        client = HttpClient(self.environment())
+
+        request = GenericRequest()
+        request.path = "/error"
+        request.verb = "GET"
+        self.stub_request_with_response(
+            request, status=200, response_body=u'{"city": "D\u00fcsseldorf"}'.encode('utf-8'))
+
+        resp = client.execute(request)
+        self.assertEqual(resp.result.city, 'D\u00fcsseldorf')
+
 if __name__ == '__main__':
     unittest.main()
