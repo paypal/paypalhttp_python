@@ -161,10 +161,28 @@ class EncoderTest(unittest.TestCase):
 
         self.assertEqual(j, b)
 
+    def test_Encoder_deserialize_response_text_case_insensitive(self):
+        j = 'some plain text'
+        headers = {"content-type": "TEXT/plain"}
+
+        b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).deserialize_response(j, headers)
+
+        self.assertEqual(j, b)
+
     def test_Encoder_deserialize_response_Json(self):
         j = '{"key": "value", "list": ["one", "two"]}'
 
         headers = {"content-type": "application/json"}
+
+        b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).deserialize_response(j, headers)
+
+        self.assertEqual("value", b["key"])
+        self.assertEqual(["one", "two"], b["list"])
+
+    def test_Encoder_deserialize_response_Json_case_insensitive(self):
+        j = '{"key": "value", "list": ["one", "two"]}'
+
+        headers = {"content-type": "application/JSON"}
 
         b = Encoder([Json(), Text(), Multipart(), FormEncoded()]).deserialize_response(j, headers)
 
