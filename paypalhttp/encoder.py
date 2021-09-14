@@ -25,7 +25,7 @@ class Encoder(object):
 
     def deserialize_response(self, response_body, headers):
         if headers and "content-type" in headers:
-            contenttype = headers["content-type"]
+            contenttype = headers["content-type"].lower()
             enc = self._encoder(contenttype)
             if enc:
                 return enc.decode(response_body)
