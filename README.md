@@ -58,7 +58,7 @@ client.add_injector(lambda req: print req)
 
 ### Error Handling
 
-`HttpClient#execute` may raise an `IOError` if something went wrong during the course of execution. If the server returned a non-200 response, this execption will be an instance of [`HttpError`](paypalhttp/http_error.py) that will contain a status code and headers you can use for debugging. 
+`HttpClient#execute` may raise an `IOError` if something went wrong during the course of execution. If the server returned a non-200 response, this exception will be an instance of [`HttpError`](paypalhttp/http_error.py) that will contain a status code and headers you can use for debugging. 
 
 ```py
 try:

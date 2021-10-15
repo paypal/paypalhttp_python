@@ -36,7 +36,7 @@ def construct_object(name, data, cls=object):
 class Result(object):
 
     def __init__(self, data):
-        self._dict = data;
+        self._dict = data
 
     def dict(self):
         return self._dict
