@@ -69,6 +69,7 @@ class HttpClient(object):
         return raw_headers
 
     def parse_response(self, response):
+        response.encoding = response.encoding or 'utf-8'
         status_code = response.status_code
 
         if 200 <= status_code <= 299:
