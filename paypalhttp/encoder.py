@@ -9,7 +9,7 @@ class Encoder(object):
     def serialize_request(self, httprequest):
         if hasattr(httprequest, "headers"):
             if "content-type" in httprequest.headers:
-                contenttype = httprequest.headers["content-type"]
+                contenttype = httprequest.headers["content-type"].lower()
                 enc = self._encoder(contenttype)
                 if enc:
                     return enc.encode(httprequest)
