@@ -9,10 +9,13 @@ from paypalhttp.serializers import Json, Text, Multipart, FormEncoded
 
 class HttpClient(object):
 
-    def __init__(self, environment):
+    def __init__(self, environment, proxies=None):
         self._injectors = []
         self.environment = environment
         self.encoder = Encoder([Json(), Text(), Multipart(), FormEncoded()])
+
+        # Optional:  https://2.python-requests.org/en/master/user/advanced/#id10
+        self.proxies = proxies # example: { "http": "proxyurl", "https": "proxyUrl"}
 
     def get_user_agent(self):
         return "Python HTTP/1.1"
@@ -55,7 +58,8 @@ class HttpClient(object):
         resp = requests.request(method=reqCpy.verb,
                                 url=self.environment.base_url + reqCpy.path,
                                 headers=reqCpy.headers,
-                                data=data)
+                                data=data,
+                                proxies=self.proxies) # If Proxies are None it's ignored.
 
         return self.parse_response(resp)
 
