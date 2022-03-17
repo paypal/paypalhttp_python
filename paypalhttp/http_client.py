@@ -1,7 +1,7 @@
-import requests
 import copy
 
 from paypalhttp.encoder import Encoder
+from paypalhttp.http_backends import AbstractBackend, RequestsBackend
 from paypalhttp.http_response import HttpResponse
 from paypalhttp.http_error import HttpError
 from paypalhttp.serializers import Json, Text, Multipart, FormEncoded
@@ -9,10 +9,14 @@ from paypalhttp.serializers import Json, Text, Multipart, FormEncoded
 
 class HttpClient(object):
 
-    def __init__(self, environment):
+    def __init__(self, environment, backend=None):
         self._injectors = []
         self.environment = environment
         self.encoder = Encoder([Json(), Text(), Multipart(), FormEncoded()])
+
+        if not isinstance(backend, AbstractBackend):
+            backend = RequestsBackend()
+        self.backend = backend
 
     def get_user_agent(self):
         return "Python HTTP/1.1"
@@ -52,7 +56,7 @@ class HttpClient(object):
             data = self.encoder.serialize_request(reqCpy)
             reqCpy.headers = self.map_headers(raw_headers, formatted_headers)
 
-        resp = requests.request(method=reqCpy.verb,
+        resp = self.backend.request(method=reqCpy.verb,
                                 url=self.environment.base_url + reqCpy.path,
                                 headers=reqCpy.headers,
                                 data=data)

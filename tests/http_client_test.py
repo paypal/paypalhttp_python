@@ -2,8 +2,7 @@ import unittest
 import responses
 
 from paypalhttp import HttpClient, File
-from paypalhttp.testutils import TestHarness
-
+from paypalhttp.testutils import MockBackend, TestHarness
 
 class GenericRequest:
 
@@ -179,6 +178,21 @@ class HttpClientTest(TestHarness):
         client.execute(request)
 
         self.assertEqual(len(request.headers), 0)
+
+    def test_HttpClient_backendIsCalled(self):
+        client = HttpClient(self.environment(), MockBackend())
+
+        self.assertTrue(isinstance(client.backend, MockBackend))
+
+        request = GenericRequest()
+        request.path = "/"
+        request.verb = "GET"
+
+        response = client.execute(request)
+
+        # Verify that the HttpClient correct calls out to the backend provided
+        # to the constructor.
+        self.assertEqual(response.headers['server'], 'MockBackend/1.0')
 
     @responses.activate
     def test_HttpClient_execute_filesArePreservedInCopy(self):
