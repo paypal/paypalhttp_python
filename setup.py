@@ -12,7 +12,7 @@ setup(
     version=version,
     author="PayPal",
     packages=["paypalhttp", "paypalhttp/testutils", "paypalhttp/serializers"],
-    install_requires=['requests>=2.0.0', 'six>=1.0.0', 'pyopenssl>=0.15'],
+    install_requires=['requests>=2.0.0', 'six>=1.0.0', 'pyopenssl>=0.15', 'typing>=3.10.0.0'],
     license="MIT",
     classifiers=[
         'Intended Audience :: Developers',
@@ -20,7 +20,6 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',

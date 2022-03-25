@@ -56,6 +56,29 @@ client.add_injector(lambda req: print req)
 ...
 ```
 
+### Backends
+
+If you need even more control over the request, for example to route the request through custom proxying or rewriting logic, you can provide your own backend to `HttpClient` by implementing `paypalhttp.http_backends.AbstractBackend` and passing an instance of that implementation as the second argument (`backend=`) to the constructor of `HttpClient`.
+
+The backend must implement one method, `#request`, accepting the following arguments:
+
+* `method`: _(Text)_ The HTTP request method
+* `url`: _(Text)_ The full URL that will be requested, including the prefix.
+* `headers`: _(Dict[Text, Text])_ Headers to be set on the request.
+* `data`: _(RequestsBody)_ The body of the request, for methods that support it. `RequestsBody` is defined as any one of the following:
+  * `None`
+  * `AnyStr` (`str` or `bytes` in Python 3; `str` or `unicode` in Python 2)
+  * `Dict[Text, Any]` (`Text` is `str` in Python 3 and `unicode` in Python 2)
+  * `Iterable[Tuple[Text, Any]]`
+
+If an exception is not thrown, `#request` must return a `paypalhttp.http_backends.Response`, which is a `NamedTuple` with the following fields (all are required):
+
+* `status_code`: `int`
+* `text`: `Text`
+* `headers`: `Dict[Text, Text]`
+
+The included backend, `RequestsBackend`, relies on `requests`. While `requests` is listed in `requirements.txt`, it is not in fact required if you will always pass your own backend to `HttpClient`.
+
 ### Error Handling
 
 `HttpClient#execute` may raise an `IOError` if something went wrong during the course of execution. If the server returned a non-200 response, this execption will be an instance of [`HttpError`](paypalhttp/http_error.py) that will contain a status code and headers you can use for debugging. 

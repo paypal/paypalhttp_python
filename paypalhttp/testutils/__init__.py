@@ -1,1 +1,2 @@
+from paypalhttp.testutils.mock_backend import MockBackend
 from paypalhttp.testutils.testharness import TestHarness

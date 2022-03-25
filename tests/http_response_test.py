@@ -141,7 +141,7 @@ class HttpResponseTest(unittest.TestCase):
         resp = HttpResponse(obj, 200)
 
         self.assertTrue('int' in resp.result)
-    
+
     def testHttpResponse_listResultSuportsInOperator(self):
         obj = ['one', 'two', 'three']
 
